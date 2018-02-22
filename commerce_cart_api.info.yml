@@ -1,0 +1,10 @@
+name: 'commerce_cart_api'
+type: module
+description: 'WIP'
+core: 8.x
+package: 'Custom'
+dependencies:
+  - commerce:commerce
+  - commerce:commerce_cart
+  - serialization
+  - jsonapi
