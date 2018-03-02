@@ -23,7 +23,7 @@ class CartCollectionResource extends ResourceBase {
     $cart_provider = \Drupal::getContainer()->get('commerce_cart.cart_provider');
     $carts = $cart_provider->getCarts();
 
-    $response = new ResourceResponse($carts, 200);
+    $response = new ResourceResponse(array_values($carts), 200);
     /** @var \Drupal\commerce_order\Entity\OrderInterface $cart */
     foreach ($carts as $cart) {
       $cart->_cart_api = TRUE;

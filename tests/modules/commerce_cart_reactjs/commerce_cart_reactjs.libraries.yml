@@ -1,0 +1,19 @@
+components:
+  version: VERSION
+  css:
+    layout:
+      css/commerce_cart.layout.css: {}
+    theme:
+      css/commerce_cart.theme.css: {}
+  js:
+    js/helpers.js: {}
+    js/app.js: {}
+  dependencies:
+    - core/drupalSettings
+    - commerce_cart_reactjs/react
+react:
+  js:
+    https://unpkg.com/react@16/umd/react.production.min.js:
+      external: true
+    https://unpkg.com/react-dom@16/umd/react-dom.production.min.js:
+      external: true

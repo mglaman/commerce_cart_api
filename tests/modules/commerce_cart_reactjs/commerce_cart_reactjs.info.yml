@@ -1,0 +1,6 @@
+name: 'Commerce Cart: ReactJS'
+description: 'Provides cart block and form replacements using ReactJS and the Cart API'
+core: 8.x
+type: module
+dependencies:
+  - commerce_cart
