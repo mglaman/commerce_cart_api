@@ -3,17 +3,18 @@
 namespace Drupal\commerce_cart_api\Normalizer;
 
 use Drupal\commerce_order\Entity\OrderInterface;
+use Drupal\commerce_order\Entity\OrderItemInterface;
 use Drupal\serialization\Normalizer\EntityNormalizer;
 
 /**
  * Normalizes/denormalizes Drupal content entities into an array structure.
  */
-class CartNormalizer extends EntityNormalizer {
+class OrderItemNormalizer extends EntityNormalizer {
 
   /**
    * {@inheritdoc}
    */
-  protected $supportedInterfaceOrClass = [OrderInterface::class];
+  protected $supportedInterfaceOrClass = [OrderItemInterface::class];
 
   /**
    * Allowed fields to be returned
@@ -23,16 +24,17 @@ class CartNormalizer extends EntityNormalizer {
    * @var array
    */
   protected $allowedFields = [
-    'order_id',
+    'order_item_id',
     'uuid',
     // Should we send the type?
     // 'type',
-    'order_number',
-    'store_id',
+    'purchased_entity',
+    'title',
     // Allow after https://www.drupal.org/project/commerce/issues/2916252.
     // 'adjustments',
+    'quantity',
+    'unit_price',
     'total_price',
-    'order_items',
   ];
 
   /**
@@ -44,8 +46,8 @@ class CartNormalizer extends EntityNormalizer {
       if (!is_array($data)) {
         $data = [$data];
       }
-      $supported = (bool) array_filter($data, function (OrderInterface $order) {
-        return !empty($order->_cart_api);
+      $supported = (bool) array_filter($data, function (OrderItemInterface $order_item) {
+        return !empty($order_item->_cart_api);
       });
     }
     return $supported;

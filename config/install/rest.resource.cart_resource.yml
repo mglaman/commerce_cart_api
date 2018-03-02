@@ -13,6 +13,7 @@ configuration:
     - POST
     - DELETE
     - PATCH
+    - GET
   formats:
     - json
   authentication:

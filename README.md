@@ -2,93 +2,109 @@
 
 Sandbox to provide a RESTful interface to interact with carts in Drupal Commerce via a lightweight public API.
 
-Example response using JSON API
+## GET
 
-We need to investigate how we can
+* GET `/cart?_format=json`
+* GET `/carts/{commerce_order}/items?_format=json`
 
-* Harness JSON API but use a ResourceType that has dynamic bundle support
-* Use fancy Serializer/Normalizer with JsonApiDocumentTopLevel but dynamic bundles
-* Support ResourceType's having hardcoded `?include`
-* Support ResourceType's having hardcoded `fields`
-
-See routing.yml and controller comments.
+Example JSON response for above.
 
 ```json
 {
-  "data": {
-    "type": "commerce_order--default",
-    "id": "8934149f-642a-48d4-b0de-37b9cdd5e2b3",
-    "attributes": {
-      "uuid": "8934149f-642a-48d4-b0de-37b9cdd5e2b3",
-      "adjustments": null,
-      "total_price": {
-        "number": "89.500000",
-        "currency_code": "USD"
-      }
-    },
-    "relationships": {
-      "order_items": {
-        "data": [
-          {
-            "type": "commerce_order_item--default",
-            "id": "4467e006-0d8c-4d75-a8a8-d2fe32820f2b"
-          }
-        ],
-        "links": {
-          "self": "http:\/\/localhost:32781\/jsonapi\/commerce_order\/default\/8934149f-642a-48d4-b0de-37b9cdd5e2b3\/relationships\/order_items",
-          "related": "http:\/\/localhost:32781\/jsonapi\/commerce_order\/default\/8934149f-642a-48d4-b0de-37b9cdd5e2b3\/order_items"
-        }
-      }
-    },
-    "links": {
-      "self": "http:\/\/localhost:32781\/jsonapi\/commerce_order\/default\/8934149f-642a-48d4-b0de-37b9cdd5e2b3"
-    }
-  },
-  "jsonapi": {
-    "version": "1.0",
-    "meta": {
-      "links": {
-        "self": "http:\/\/jsonapi.org\/format\/1.0\/"
-      }
-    }
-  },
-  "links": {
-    "self": "http:\/\/localhost:32781\/cart\/8934149f-642a-48d4-b0de-37b9cdd5e2b3?_format=json\u0026include=order_items\u0026fields%5Bcommerce_order--default%5D=uuid%2Cadjustments%2Ctotal_price%2Corder_items\u0026fields%5Bcommerce_order_item--default%5D=uuid%2Cadjustments%2Cunit_price%2Ctotal_price%2Cquantity%2Ctitle%2Cpurchased_entity"
-  },
-  "included": [
+  "order_id": [
     {
-      "type": "commerce_order_item--default",
-      "id": "4467e006-0d8c-4d75-a8a8-d2fe32820f2b",
-      "attributes": {
-        "uuid": "4467e006-0d8c-4d75-a8a8-d2fe32820f2b",
-        "title": "Commerce Guys Hoodie - Cyan,  Small",
-        "quantity": "1.00",
-        "unit_price": {
-          "number": "89.500000",
-          "currency_code": "USD"
-        },
-        "adjustments": null,
-        "total_price": {
-          "number": "89.500000",
+      "value": 1
+    }
+  ],
+  "uuid": [
+    {
+      "value": "f5e1c839-df12-45c3-9491-5f0aaf4ba8c6"
+    }
+  ],
+  "type": [
+    {
+      "target_id": "physical",
+      "target_type": "commerce_order_type",
+      "target_uuid": "a34d462f-61f9-4b6c-b422-39ea178b18e0"
+    }
+  ],
+  "order_number": [],
+  "store_id": [
+    {
+      "target_id": 1,
+      "target_type": "commerce_store",
+      "target_uuid": "9f91fc5b-e26c-455d-b041-9cf9e57586fb",
+      "url": "\/store\/1"
+    }
+  ],
+  "total_price": [
+    {
+      "number": "52.00",
+      "currency_code": "USD"
+    }
+  ],
+  "order_items": [
+    {
+      "order_item_id": [
+        {
+          "value": 1
+        }
+      ],
+      "uuid": [
+        {
+          "value": "7cf02b27-5865-4bfe-916b-48f2124a28f4"
+        }
+      ],
+      "type": [
+        {
+          "target_id": "physical_product_variation",
+          "target_type": "commerce_order_item_type",
+          "target_uuid": "7a6b2d03-e581-4f2b-9c4e-81f870b0952d"
+        }
+      ],
+      "purchased_entity": [
+        {
+          "target_id": 1,
+          "target_type": "commerce_product_variation",
+          "target_uuid": "2a242d40-c483-4deb-bab5-1eab4e715a28"
+        }
+      ],
+      "title": [
+        {
+          "value": "Drupal Commerce Hoodie - Blue, Small"
+        }
+      ],
+      "quantity": [
+        {
+          "value": "1.00"
+        }
+      ],
+      "unit_price": [
+        {
+          "number": "52.00",
           "currency_code": "USD"
         }
-      },
-      "relationships": {
-        "purchased_entity": {
-          "data": {
-            "type": "commerce_product_variation--t_shirt",
-            "id": "a42be4ee-c332-4a7b-8361-ff6826150d66"
-          },
-          "links": {
-            "self": "http:\/\/localhost:32781\/jsonapi\/commerce_order_item\/default\/4467e006-0d8c-4d75-a8a8-d2fe32820f2b\/relationships\/purchased_entity",
-            "related": "http:\/\/localhost:32781\/jsonapi\/commerce_order_item\/default\/4467e006-0d8c-4d75-a8a8-d2fe32820f2b\/purchased_entity"
-          }
+      ],
+      "total_price": [
+        {
+          "number": "52.00",
+          "currency_code": "USD"
         }
-      },
-      "links": {
-        "self": "http:\/\/localhost:32781\/jsonapi\/commerce_order_item\/default\/4467e006-0d8c-4d75-a8a8-d2fe32820f2b"
-      }
+      ]
     }
   ]
 }
+
 ```
+
+## POST
+
+* POST `/carts/{commerce_order}/items?_format=json`
+
+## PATCH
+
+* PATCH `/carts/{commerce_order}/items?_format=json`
+
+## DELETE
+
+* DELETE `/carts/{commerce_order}/items?_format=json`

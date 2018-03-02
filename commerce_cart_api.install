@@ -12,6 +12,7 @@ use Drupal\Core\Session\AccountInterface;
  */
 function commerce_cart_api_install() {
   $permissions = [
+    'restful get cart_resource',
     'restful delete cart_resource',
     'restful patch cart_resource',
     'restful post cart_resource',

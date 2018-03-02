@@ -3,6 +3,7 @@
 namespace Drupal\commerce_cart_api\Normalizer;
 
 use Drupal\commerce_order\Entity\OrderInterface;
+use Drupal\commerce_order\Entity\OrderItemInterface;
 use Drupal\commerce_price\Plugin\Field\FieldType\PriceItem;
 use Drupal\Core\Entity\Plugin\DataType\EntityAdapter;
 use Drupal\Core\Field\FieldItemListInterface;
@@ -33,7 +34,7 @@ class PriceNormalizer extends FieldItemNormalizer {
         $parent = $parent->getParent();
         if ($parent instanceof EntityAdapter) {
           $entity = $parent->getValue();
-          if ($entity instanceof OrderInterface) {
+          if ($entity instanceof OrderInterface || $entity instanceof OrderItemInterface) {
             return !empty($entity->_cart_api);
           }
         }
