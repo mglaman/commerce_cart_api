@@ -2490,20 +2490,17 @@ module.exports = Agent;
 var Cart = function (_Component) {
   babelHelpers.inherits(Cart, _Component);
 
-  function Cart() {
-    var _ref;
-
-    var _temp, _this, _ret;
-
+  function Cart(props) {
     babelHelpers.classCallCheck(this, Cart);
 
-    for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-      args[_key] = arguments[_key];
-    }
+    var _this = babelHelpers.possibleConstructorReturn(this, (Cart.__proto__ || Object.getPrototypeOf(Cart)).call(this, props));
 
-    return _ret = (_temp = (_this = babelHelpers.possibleConstructorReturn(this, (_ref = Cart.__proto__ || Object.getPrototypeOf(Cart)).call.apply(_ref, [this].concat(args))), _this), _this.state = {
+    _this.state = {
+      // Copy the prop into state so we can refresh it.
+      cart: props.cart,
       langCode: drupalSettings.path.currentLanguage
-    }, _temp), babelHelpers.possibleConstructorReturn(_this, _ret);
+    };
+    return _this;
   }
 
   babelHelpers.createClass(Cart, [{
@@ -2516,22 +2513,21 @@ var Cart = function (_Component) {
     value: function render() {
       var _this2 = this;
 
-      var cart = this.props.cart;
-
       return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
         'div',
         null,
         __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
           'table',
           null,
-          cart.order_items.map(function (item) {
+          this.state.cart.order_items.map(function (item) {
             return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
               'tr',
-              null,
+              { key: item.order_item_id[0].value },
               __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
                 'td',
                 null,
-                item.quantity[0].value
+                'x',
+                parseInt(item.quantity[0].value)
               ),
               __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
                 'td',
@@ -2542,6 +2538,16 @@ var Cart = function (_Component) {
                 'td',
                 null,
                 _this2.formatPrice(item.unit_price[0])
+              ),
+              __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+                'td',
+                null,
+                _this2.formatPrice(item.total_price[0])
+              ),
+              __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+                'td',
+                null,
+                'Remove'
               )
             );
           })
@@ -2550,7 +2556,7 @@ var Cart = function (_Component) {
           'div',
           null,
           'Total: ',
-          this.formatPrice(cart.total_price[0])
+          this.formatPrice(this.state.cart.total_price[0])
         )
       );
     }
