@@ -1,0 +1,10 @@
+services:
+  serializer.commerce_cart_api.content_entity:
+      class: Drupal\commerce_cart_api\Normalizer\CartNormalizer
+      tags:
+        - { name: normalizer }
+      arguments: ['@entity.manager']
+  serialization.commerce_cart_api.field_item:
+    class: Drupal\commerce_cart_api\Normalizer\PriceNormalizer
+    tags:
+      - { name: normalizer, priority: 8 }

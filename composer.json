@@ -10,5 +10,7 @@
     "issues": "https://www.drupal.org/project/issues/commerce_cart_api",
     "source": "http://cgit.drupalcode.org/commerce_cart_api"
   },
-  "require": { }
+  "require": {
+      "drupal/commerce": "^2.0"
+  }
 }

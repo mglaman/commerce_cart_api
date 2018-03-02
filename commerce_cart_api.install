@@ -1,0 +1,23 @@
+<?php
+
+/**
+ * @file
+ * Things
+ */
+
+use Drupal\Core\Session\AccountInterface;
+
+/**
+ * Implements hook_install().
+ */
+function commerce_cart_api_install() {
+  $permissions = [
+    'restful delete cart_resource',
+    'restful patch cart_resource',
+    'restful post cart_resource',
+    'restful get cart_collection_resource',
+    'restful post cart_collection_resource',
+  ];
+  user_role_grant_permissions(AccountInterface::ANONYMOUS_ROLE, $permissions);
+  user_role_grant_permissions(AccountInterface::AUTHENTICATED_ROLE, $permissions);
+}
