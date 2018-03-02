@@ -1,0 +1,27 @@
+commerce_cart_api.cart_collection:
+  path: '/cart'
+  defaults:
+    _controller: 'Drupal\commerce_cart_api\Controller\CartController::collection'
+  methods: [GET]
+  requirements:
+    _access: 'TRUE'
+    _permission: 'access cart'
+    _format: 'json'
+  options:
+    _auth: ['cookie']
+    _access_checks: ['access_check.default']
+commerce_cart_api.cart_canonical:
+  path: '/cart/{commerce_order}'
+  defaults:
+    _controller: 'Drupal\commerce_cart_api\Controller\CartController::get'
+  methods: [GET]
+  requirements:
+    _access: 'TRUE'
+    _permission: 'access cart'
+    _format: 'json'
+  options:
+    parameters:
+      commerce_order:
+        type: 'entity:commerce_order'
+    _auth: ['cookie']
+    _access_checks: ['access_check.default']
