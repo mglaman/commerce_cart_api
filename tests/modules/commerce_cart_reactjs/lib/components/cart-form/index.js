@@ -33,7 +33,7 @@ class CartForm extends Component {
     return(
       <div>
         {this.state.carts.map(cart => (
-          <div key={cart.order_id[0].value}>
+          <div key={cart.order_id}>
             <Cart cart={cart}/>
           </div>
         ))}

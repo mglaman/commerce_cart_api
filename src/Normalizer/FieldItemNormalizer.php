@@ -4,23 +4,22 @@ namespace Drupal\commerce_cart_api\Normalizer;
 
 use Drupal\commerce_order\Entity\OrderInterface;
 use Drupal\commerce_order\Entity\OrderItemInterface;
-use Drupal\commerce_price\Plugin\Field\FieldType\PriceItem;
 use Drupal\Core\Entity\Plugin\DataType\EntityAdapter;
+use Drupal\Core\Field\FieldItemInterface;
 use Drupal\Core\Field\FieldItemListInterface;
-use Drupal\serialization\Normalizer\FieldItemNormalizer;
+use Drupal\serialization\Normalizer\FieldItemNormalizer as CoreFieldItemNormalizer;
 
 /**
  * Ensures normalized prices are rounded.
  *
- * @todo is this needed? JavaScripts locale format may be fine.
- * @todo should it return raw number, currency, then formatted?
+ * @tod is this needed? JavaScripts locale format may be fine.
  */
-class PriceNormalizer extends FieldItemNormalizer {
+class FieldItemNormalizer extends CoreFieldItemNormalizer {
 
   /**
    * {@inheritdoc}
    */
-  protected $supportedInterfaceOrClass = PriceItem::class;
+  protected $supportedInterfaceOrClass = FieldItemInterface::class;
 
   /**
    * @inheritDoc
@@ -46,24 +45,21 @@ class PriceNormalizer extends FieldItemNormalizer {
 
   /**
    * {@inheritdoc}
-   *
-   * @param \Drupal\commerce_price\Plugin\Field\FieldType\PriceItem $field_item
-   *   The price field item.
    */
   public function normalize($field_item, $format = NULL, array $context = []) {
-    $attributes = [];
-
-    if (!$field_item->isEmpty()) {
-      $raw_value = $field_item->toPrice();
-      $rounded_value = \Drupal::getContainer()->get('commerce_price.rounder')->round($raw_value);
-      $field_item->setValue($rounded_value);
+    $data = parent::normalize($field_item, $format, $context);
+    // This will always be true, but here for type hinting for IDE.
+    if (!$field_item instanceof FieldItemInterface) {
+      return $data;
     }
-
-    /** @var \Drupal\Core\TypedData\TypedDataInterface $property */
-    foreach ($field_item as $name => $property) {
-      $attributes[$name] = $this->serializer->normalize($property, $format, $context);
+    $main_property = $field_item::mainPropertyName();
+    if (count($data) == 1) {
+      return reset($data);
     }
-    return $attributes;
+    elseif (isset($data[$main_property])) {
+      return $data[$main_property];
+    }
+    return $data;
   }
 
 }

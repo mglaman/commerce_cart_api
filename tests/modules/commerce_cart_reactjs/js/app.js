@@ -2547,7 +2547,7 @@ var Cart = function (_Component) {
     _this.state = {
       // Copy the prop into state so we can refresh it.
       cart: props.cart,
-      cartId: props.cart.order_id[0].value,
+      cartId: props.cart.order_id,
       langCode: drupalSettings.path.currentLanguage
     };
     return _this;
@@ -2574,7 +2574,7 @@ var Cart = function (_Component) {
       var _this3 = this;
 
       event.preventDefault();
-      __WEBPACK_IMPORTED_MODULE_3_superagent___default.a.delete(__WEBPACK_IMPORTED_MODULE_2__utils__["a" /* baseUrl */] + '/cart/' + this.state.cartId + '/items/' + item.order_item_id[0].value + '?_format=json').end(function (err, _ref2) {
+      __WEBPACK_IMPORTED_MODULE_3_superagent___default.a.delete(__WEBPACK_IMPORTED_MODULE_2__utils__["a" /* baseUrl */] + '/cart/' + this.state.cartId + '/items/' + item.order_item_id + '?_format=json').end(function (err, _ref2) {
         var body = _ref2.body;
 
         debugger;
@@ -2595,27 +2595,27 @@ var Cart = function (_Component) {
           this.state.cart.order_items.map(function (item) {
             return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
               'tr',
-              { key: item.order_item_id[0].value },
+              { key: item.order_item_id },
               __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
                 'td',
                 null,
                 'x',
-                parseInt(item.quantity[0].value)
+                parseInt(item.quantity)
               ),
               __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
                 'td',
                 null,
-                item.title[0].value
+                item.title
               ),
               __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
                 'td',
                 null,
-                Object(__WEBPACK_IMPORTED_MODULE_2__utils__["b" /* formatPrice */])(item.unit_price[0])
+                Object(__WEBPACK_IMPORTED_MODULE_2__utils__["b" /* formatPrice */])(item.unit_price)
               ),
               __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
                 'td',
                 null,
-                Object(__WEBPACK_IMPORTED_MODULE_2__utils__["b" /* formatPrice */])(item.total_price[0])
+                Object(__WEBPACK_IMPORTED_MODULE_2__utils__["b" /* formatPrice */])(item.total_price)
               ),
               __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
                 'td',
@@ -2643,7 +2643,7 @@ var Cart = function (_Component) {
           'div',
           null,
           'Total: ',
-          Object(__WEBPACK_IMPORTED_MODULE_2__utils__["b" /* formatPrice */])(this.state.cart.total_price[0])
+          Object(__WEBPACK_IMPORTED_MODULE_2__utils__["b" /* formatPrice */])(this.state.cart.total_price)
         )
       );
     }
@@ -3404,7 +3404,7 @@ var CartForm = function (_Component) {
         this.state.carts.map(function (cart) {
           return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
             'div',
-            { key: cart.order_id[0].value },
+            { key: cart.order_id },
             __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_3__cart__["a" /* default */], { cart: cart })
           );
         })
@@ -3449,7 +3449,7 @@ var Cart = function (_Component) {
     _this.state = {
       // Copy the prop into state so we can refresh it.
       cart: props.cart,
-      cartId: props.cart.order_id[0].value,
+      cartId: props.cart.order_id,
       langCode: drupalSettings.path.currentLanguage
     };
     return _this;
@@ -3475,7 +3475,7 @@ var Cart = function (_Component) {
       var _this3 = this;
 
       event.preventDefault();
-      __WEBPACK_IMPORTED_MODULE_3_superagent___default.a.delete(__WEBPACK_IMPORTED_MODULE_2__utils__["a" /* baseUrl */] + '/cart/' + this.state.cartId + '/items/' + item.order_item_id[0].value + '?_format=json').end(function (err, _ref2) {
+      __WEBPACK_IMPORTED_MODULE_3_superagent___default.a.delete(__WEBPACK_IMPORTED_MODULE_2__utils__["a" /* baseUrl */] + '/cart/' + this.state.cartId + '/items/' + item.order_item_id + '?_format=json').end(function (err, _ref2) {
         var body = _ref2.body;
 
         _this3.doCartRefresh();
@@ -3499,7 +3499,7 @@ var Cart = function (_Component) {
     key: 'handleQuantityChange',
     value: function handleQuantityChange(item, _key, event) {
       // Update the items quantity.
-      item.quantity[0].value = event.target.value;
+      item.quantity = event.target.value;
       var cart = this.state.cart;
       cart.order_items[_key] = item;
       this.setState({
@@ -3556,30 +3556,30 @@ var Cart = function (_Component) {
           this.state.cart.order_items.map(function (item, _key) {
             return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
               'tr',
-              { key: item.order_item_id[0].value },
+              { key: item.order_item_id },
               __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
                 'td',
                 null,
-                item.title[0].value
+                item.title
               ),
               __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
                 'td',
                 null,
-                Object(__WEBPACK_IMPORTED_MODULE_2__utils__["b" /* formatPrice */])(item.unit_price[0])
+                Object(__WEBPACK_IMPORTED_MODULE_2__utils__["b" /* formatPrice */])(item.unit_price)
               ),
               __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
                 'td',
                 null,
                 __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement('input', {
                   type: 'number',
-                  value: parseInt(item.quantity[0].value),
+                  value: parseInt(item.quantity),
                   onChange: _this5.handleQuantityChange.bind(_this5, item, _key)
                 })
               ),
               __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
                 'td',
                 null,
-                Object(__WEBPACK_IMPORTED_MODULE_2__utils__["b" /* formatPrice */])(item.total_price[0])
+                Object(__WEBPACK_IMPORTED_MODULE_2__utils__["b" /* formatPrice */])(item.total_price)
               ),
               __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
                 'td',
@@ -3615,7 +3615,7 @@ var Cart = function (_Component) {
               __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
                 'div',
                 null,
-                Object(__WEBPACK_IMPORTED_MODULE_2__utils__["b" /* formatPrice */])(this.state.cart.total_price[0])
+                Object(__WEBPACK_IMPORTED_MODULE_2__utils__["b" /* formatPrice */])(this.state.cart.total_price)
               )
             )
           )

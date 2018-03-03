@@ -15,7 +15,7 @@ class Cart extends Component {
     this.state = {
       // Copy the prop into state so we can refresh it.
       cart: props.cart,
-      cartId: props.cart.order_id[0].value,
+      cartId: props.cart.order_id,
       langCode: drupalSettings.path.currentLanguage,
     };
   }
@@ -32,7 +32,7 @@ class Cart extends Component {
   doItemDelete(item, event) {
     event.preventDefault();
     superagent
-      .delete(`${baseUrl}/cart/${this.state.cartId}/items/${item.order_item_id[0].value}?_format=json`)
+      .delete(`${baseUrl}/cart/${this.state.cartId}/items/${item.order_item_id}?_format=json`)
       .end((err, { body }) => {
         this.doCartRefresh();
       })
@@ -51,7 +51,7 @@ class Cart extends Component {
   }
   handleQuantityChange(item, _key, event) {
     // Update the items quantity.
-    item.quantity[0].value = event.target.value;
+    item.quantity = event.target.value;
     let cart = this.state.cart;
     cart.order_items[_key] = item;
     this.setState({
@@ -75,22 +75,22 @@ class Cart extends Component {
             <th>Remove</th>
           </tr>
           {this.state.cart.order_items.map((item, _key) => (
-            <tr key={item.order_item_id[0].value}>
-              <td>{item.title[0].value}</td>
-              <td>{formatPrice(item.unit_price[0])}</td>
+            <tr key={item.order_item_id}>
+              <td>{item.title}</td>
+              <td>{formatPrice(item.unit_price)}</td>
               <td><input
                 type="number"
-                value={parseInt(item.quantity[0].value)}
+                value={parseInt(item.quantity)}
                 onChange={this.handleQuantityChange.bind(this, item, _key)}
               /></td>
-              <td>{formatPrice(item.total_price[0])}</td>
+              <td>{formatPrice(item.total_price)}</td>
               <td><button onClick={this.doItemDelete.bind(this, item)}><span>Remove</span></button></td>
             </tr>
           ))}
           <tfoot>
             <td colSpan="2" />
             <td><button onClick={this.doItemsUpdate.bind(this)}>Update quantities</button></td>
-            <td><div>{formatPrice(this.state.cart.total_price[0])}</div></td>
+            <td><div>{formatPrice(this.state.cart.total_price)}</div></td>
           </tfoot>
         </table>
         <button>Checkout</button>

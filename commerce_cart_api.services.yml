@@ -12,7 +12,15 @@ services:
   serialization.commerce_cart_api.price:
     class: Drupal\commerce_cart_api\Normalizer\PriceNormalizer
     tags:
+      - { name: normalizer, priority: 9 }
+  serialization.commerce_cart_api.field_item:
+    class: Drupal\commerce_cart_api\Normalizer\FieldItemNormalizer
+    tags:
       - { name: normalizer, priority: 8 }
+  serialization.commerce_cart_api.field:
+    class: Drupal\commerce_cart_api\Normalizer\FieldNormalizer
+    tags:
+      - { name: normalizer, priority: 9 }
   serialization.commerce_cart_api.order_items:
     class: Drupal\commerce_cart_api\Normalizer\OrderItemsNormalizer
     arguments: ['@entity.repository']

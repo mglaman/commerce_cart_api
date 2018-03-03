@@ -12,7 +12,7 @@ class Cart extends Component {
     this.state = {
       // Copy the prop into state so we can refresh it.
       cart: props.cart,
-      cartId: props.cart.order_id[0].value,
+      cartId: props.cart.order_id,
       langCode: drupalSettings.path.currentLanguage,
     };
   }
@@ -30,7 +30,7 @@ class Cart extends Component {
   doItemDelete(item, event) {
     event.preventDefault();
     superagent
-      .delete(`${baseUrl}/cart/${this.state.cartId}/items/${item.order_item_id[0].value}?_format=json`)
+      .delete(`${baseUrl}/cart/${this.state.cartId}/items/${item.order_item_id}?_format=json`)
       .end((err, { body }) => {
         debugger;
         this.doCartRefresh();
@@ -41,18 +41,18 @@ class Cart extends Component {
       <div>
         <table>
           {this.state.cart.order_items.map(item => (
-            <tr key={item.order_item_id[0].value}>
-              <td>x{parseInt(item.quantity[0].value)}</td>
-              <td>{item.title[0].value}</td>
-              <td>{formatPrice(item.unit_price[0])}</td>
-              <td>{formatPrice(item.total_price[0])}</td>
+            <tr key={item.order_item_id}>
+              <td>x{parseInt(item.quantity)}</td>
+              <td>{item.title}</td>
+              <td>{formatPrice(item.unit_price)}</td>
+              <td>{formatPrice(item.total_price)}</td>
               <td><button onClick={this.doItemDelete.bind(this, item)}>
                 <span>X</span> <span className="hidden">Remove</span>
               </button></td>
             </tr>
           ))}
         </table>
-        <div>Total: {formatPrice(this.state.cart.total_price[0])}</div>
+        <div>Total: {formatPrice(this.state.cart.total_price)}</div>
       </div>
     )
   }
