@@ -6,6 +6,7 @@ use Drupal\commerce_order\Entity\OrderInterface;
 use Drupal\commerce_order\Entity\OrderItemInterface;
 use Drupal\Core\Entity\Plugin\DataType\EntityAdapter;
 use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\serialization\Normalizer\FieldNormalizer as CoreFieldNormalizer;
 
 class FieldNormalizer extends CoreFieldNormalizer {
@@ -33,18 +34,20 @@ class FieldNormalizer extends CoreFieldNormalizer {
    * {@inheritdoc}
    */
   public function normalize($field_item, $format = NULL, array $context = []) {
+    /** @var \Drupal\Core\Field\FieldItemListInterface $field_item */
+    $cardinality = $field_item->getFieldDefinition()->getFieldStorageDefinition()->getCardinality();
     $data = parent::normalize($field_item, $format, $context);
     if (empty($data)) {
       return NULL;
     }
-    if (count($data) > 1) {
+    if ($cardinality > 1 || $cardinality == FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED) {
       return $data;
     }
     return reset($data);
   }
 
   /**
-   * @inheritDoc
+   * {@inheritdoc}
    */
   public function denormalize($data, $class, $format = NULL, array $context = []) {
     if (!is_array($data)) {
