@@ -9,7 +9,6 @@ commerce_cart_api.cart_collection:
     _format: 'json'
   options:
     _auth: ['cookie']
-    _access_checks: ['access_check.default']
 commerce_cart_api.cart_canonical:
   path: '/cart/{commerce_order}'
   defaults:
@@ -24,4 +23,17 @@ commerce_cart_api.cart_canonical:
       commerce_order:
         type: 'entity:commerce_order'
     _auth: ['cookie']
-    _access_checks: ['access_check.default']
+
+commerce_cart_api.cart_items_delete:
+  path: '/cart/{commerce_order}/items/{commerce_order_item}'
+  defaults:
+    _controller: 'Drupal\commerce_cart_api\Controller\CartItemsController::delete'
+  methods: [DELETE]
+  requirements:
+    _access: 'TRUE'
+    _permission: 'access cart'
+  options:
+    parameters:
+      commerce_order:
+        type: 'entity:commerce_order'
+    _auth: ['cookie']

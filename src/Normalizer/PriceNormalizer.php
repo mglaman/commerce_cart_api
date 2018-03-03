@@ -52,9 +52,11 @@ class PriceNormalizer extends FieldItemNormalizer {
   public function normalize($field_item, $format = NULL, array $context = []) {
     $attributes = [];
 
-    $raw_value = $field_item->toPrice();
-    $rounded_value = \Drupal::getContainer()->get('commerce_price.rounder')->round($raw_value);
-    $field_item->setValue($rounded_value);
+    if (!$field_item->isEmpty()) {
+      $raw_value = $field_item->toPrice();
+      $rounded_value = \Drupal::getContainer()->get('commerce_price.rounder')->round($raw_value);
+      $field_item->setValue($rounded_value);
+    }
 
     /** @var \Drupal\Core\TypedData\TypedDataInterface $property */
     foreach ($field_item as $name => $property) {

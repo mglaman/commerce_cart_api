@@ -1,0 +1,5 @@
+services:
+  commerce_cart_reactjs.route_subscriber:
+    class: Drupal\commerce_cart_reactjs\Routing\RouteSubscriber
+    tags:
+      - { name: event_subscriber }

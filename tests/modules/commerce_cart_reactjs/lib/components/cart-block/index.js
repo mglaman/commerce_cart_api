@@ -27,7 +27,7 @@ class CartBlock extends Component {
         this.setState({
           loaded: true,
           count: count,
-          carts: body,
+          carts: body.length > 0 ? body : [],
         });
       })
   }

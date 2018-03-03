@@ -23,23 +23,13 @@ class CartController implements ContainerInjectionInterface {
   protected $cartProvider;
 
   /**
-   * The cart session.
-   *
-   * @var \Drupal\commerce_cart\CartSessionInterface
-   */
-  protected $cartSession;
-
-  /**
    * CartCollection constructor.
    *
    * @param \Drupal\commerce_cart\CartProviderInterface $cart_provider
    *   The cart provider.
-   * @param \Drupal\commerce_cart\CartSessionInterface $cart_session
-   *   The cart session.
    */
-  public function __construct(CartProviderInterface $cart_provider, CartSessionInterface $cart_session) {
+  public function __construct(CartProviderInterface $cart_provider) {
     $this->cartProvider = $cart_provider;
-    $this->cartSession = $cart_session;
   }
 
   /**
@@ -47,8 +37,7 @@ class CartController implements ContainerInjectionInterface {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('commerce_cart.cart_provider'),
-      $container->get('commerce_cart.cart_session')
+      $container->get('commerce_cart.cart_provider')
     );
   }
 
