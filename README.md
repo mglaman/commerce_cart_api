@@ -2,6 +2,15 @@
 
 Sandbox to provide a RESTful interface to interact with carts in Drupal Commerce via a lightweight public API.
 
+## How to test it out
+
+* Clone down this repository into your Drupal Commerce TESTING PROJECT
+* Add `$settings['extension_discovery_scan_tests'] = TRUE;` to your settings.php
+* Enable `commerce_cart_api`
+* Enabled `commerce_cart_reactjs`
+* Remove default cart block with `commerce_cart_reactjs`
+* Cart form automatically swapped.
+
 ## GET (carts)
 
 ```bash
