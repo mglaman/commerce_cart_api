@@ -6,13 +6,19 @@ use Drupal\commerce_cart\CartManagerInterface;
 use Drupal\commerce_cart\CartProviderInterface;
 use Drupal\commerce_cart\CartSessionInterface;
 use Drupal\commerce_order\Entity\OrderInterface;
+use Drupal\commerce_order\Entity\OrderItem;
 use Drupal\commerce_order\Entity\OrderItemInterface;
 use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\ResourceResponse;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
+use Symfony\Component\Serializer\Exception\InvalidArgumentException;
+use Symfony\Component\Serializer\Exception\UnexpectedValueException;
 
 /**
  * Controller to provide a collection of carts for current session.
@@ -77,6 +83,68 @@ class CartItemsController implements ContainerInjectionInterface {
     // DELETE responses have an empty body.
     // @todo wanted to return the order. But REST reponse subscriber freaks out.
     return new ModifiedResourceResponse(NULL, 204);
+  }
+
+  public function patch(OrderInterface $commerce_order, Request $request) {
+    $carts = $this->cartProvider->getCartIds();
+    if (!in_array($commerce_order->id(), $carts)) {
+      throw new AccessDeniedHttpException();
+    }
+
+    $received = $request->getContent();
+    $format = $request->getContentType();
+    // @todo injection.
+    $serializer = \Drupal::getContainer()->get('serializer');
+    try {
+      $unserialized = $serializer->decode($received, $format, ['request_method' => 'patch']);
+    }
+    catch (UnexpectedValueException $e) {
+      // If an exception was thrown at this stage, there was a problem
+      // decoding the data. Throw a 400 http exception.
+      throw new BadRequestHttpException($e->getMessage());
+    }
+
+    // Purge read only fields.
+    // @todo We should investigate implementing field access checks on these.
+    foreach ($unserialized as $delta => $unserialized_order_item) {
+      unset($unserialized[$delta]['purchased_entity']);
+      unset($unserialized[$delta]['title']);
+      unset($unserialized[$delta]['unit_price']);
+      unset($unserialized[$delta]['total_price']);
+    }
+
+    foreach ($unserialized as $unserialized_order_item) {
+      try {
+        // @todo this would bork if someone customized entity class.
+        /** @var \Drupal\commerce_order\Entity\OrderItemInterface $updated_order_item */
+        $updated_order_item = $serializer->denormalize($unserialized_order_item, OrderItem::class, $format, ['request_method' => 'patch']);
+        $original_order_item = OrderItem::load($updated_order_item->id());
+
+        if (!$commerce_order->hasItem($original_order_item)) {
+          throw new UnprocessableEntityHttpException('Invalid order item');
+        }
+      }
+      catch (UnexpectedValueException $e) {
+        throw new UnprocessableEntityHttpException($e->getMessage());
+      }
+      catch (InvalidArgumentException $e) {
+        throw new UnprocessableEntityHttpException($e->getMessage());
+      }
+
+      foreach ($updated_order_item->_restSubmittedFields as $field_name) {
+        $field = $updated_order_item->get($field_name);
+        $original_order_item->set($field_name, $field->getValue());
+      }
+
+      $original_order_item->save();
+    }
+
+    $commerce_order->_cart_api = TRUE;
+    $commerce_order->setRefreshState(OrderInterface::REFRESH_ON_SAVE);
+    $commerce_order->save();
+
+    // Return the updated entity in the response body.
+    return new ModifiedResourceResponse($commerce_order, 200);
   }
 
 }

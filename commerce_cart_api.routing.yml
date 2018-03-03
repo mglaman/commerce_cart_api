@@ -37,3 +37,19 @@ commerce_cart_api.cart_items_delete:
       commerce_order:
         type: 'entity:commerce_order'
     _auth: ['cookie']
+
+commerce_cart_api.cart_items_patch:
+  path: '/cart/{commerce_order}/items'
+  defaults:
+    _controller: 'Drupal\commerce_cart_api\Controller\CartItemsController::patch'
+  methods: [PATCH]
+  requirements:
+    _access: 'TRUE'
+    _permission: 'access cart'
+    _format: 'json'
+    _content_type_format: 'json'
+  options:
+    parameters:
+      commerce_order:
+        type: 'entity:commerce_order'
+    _auth: ['cookie']

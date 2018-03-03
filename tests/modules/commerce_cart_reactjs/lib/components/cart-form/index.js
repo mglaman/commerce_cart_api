@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import {baseUrl} from "../../utils";
 import superagent from 'superagent';
+import Cart from "./cart";
 
 class CartForm extends Component {
   constructor(props) {
@@ -33,7 +34,7 @@ class CartForm extends Component {
       <div>
         {this.state.carts.map(cart => (
           <div key={cart.order_id[0].value}>
-            {cart.order_id[0].value}
+            <Cart cart={cart}/>
           </div>
         ))}
       </div>

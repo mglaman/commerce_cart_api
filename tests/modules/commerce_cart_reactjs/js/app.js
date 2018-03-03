@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 8);
+/******/ 	return __webpack_require__(__webpack_require__.s = 9);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -75,7 +75,17 @@ module.exports = React;
 
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return baseUrl; });
-var baseUrl = "" + window.location.origin + drupalSettings.path.baseUrl;
+/* harmony export (immutable) */ __webpack_exports__["b"] = formatPrice;
+var langCode = drupalSettings.path.currentLanguage;
+
+var baseUrl = '' + window.location.origin + drupalSettings.path.baseUrl;
+
+function formatPrice(priceObject) {
+  if (priceObject.currency_code === null) {
+    return '';
+  }
+  return new Intl.NumberFormat(langCode, { style: 'currency', currency: priceObject.currency_code }).format(priceObject.number);
+}
 
 /***/ }),
 /* 2 */
@@ -98,11 +108,11 @@ if (typeof window !== 'undefined') {
   root = this;
 }
 
-var Emitter = __webpack_require__(11);
-var RequestBase = __webpack_require__(12);
+var Emitter = __webpack_require__(12);
+var RequestBase = __webpack_require__(13);
 var isObject = __webpack_require__(3);
-var ResponseBase = __webpack_require__(13);
-var Agent = __webpack_require__(15);
+var ResponseBase = __webpack_require__(14);
+var Agent = __webpack_require__(16);
 
 /**
  * Noop.
@@ -1036,6 +1046,34 @@ module.exports = isObject;
 /* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
+/**
+ * Copyright (c) 2013-present, Facebook, Inc.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+if (true) {
+  var REACT_ELEMENT_TYPE = typeof Symbol === 'function' && Symbol.for && Symbol.for('react.element') || 0xeac7;
+
+  var isValidElement = function isValidElement(object) {
+    return (typeof object === 'undefined' ? 'undefined' : babelHelpers.typeof(object)) === 'object' && object !== null && object.$$typeof === REACT_ELEMENT_TYPE;
+  };
+
+  // By explicitly using `prop-types` you are opting into new development behavior.
+  // http://fb.me/prop-types-in-prod
+  var throwOnDirectAccess = true;
+  module.exports = __webpack_require__(18)(isValidElement, throwOnDirectAccess);
+} else {
+  // By explicitly using `prop-types` you are opting into new production behavior.
+  // http://fb.me/prop-types-in-prod
+  module.exports = require('./factoryWithThrowingShims')();
+}
+
+/***/ }),
+/* 5 */
+/***/ (function(module, exports, __webpack_require__) {
+
 "use strict";
 
 
@@ -1075,7 +1113,7 @@ emptyFunction.thatReturnsArgument = function (arg) {
 module.exports = emptyFunction;
 
 /***/ }),
-/* 5 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1134,7 +1172,7 @@ function invariant(condition, format, a, b, c, d, e, f) {
 module.exports = invariant;
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1148,7 +1186,7 @@ module.exports = invariant;
 
 
 
-var emptyFunction = __webpack_require__(4);
+var emptyFunction = __webpack_require__(5);
 
 /**
  * Similar to invariant but only logs a warning if the condition is not met.
@@ -1202,7 +1240,7 @@ if (true) {
 module.exports = warning;
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1220,16 +1258,16 @@ var ReactPropTypesSecret = 'SECRET_DO_NOT_PASS_THIS_OR_YOU_WILL_BE_FIRED';
 module.exports = ReactPropTypesSecret;
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_react__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_react_dom__ = __webpack_require__(9);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_react_dom__ = __webpack_require__(10);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_react_dom___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_react_dom__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__components_cart_block__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__components_cart_block__ = __webpack_require__(11);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__components_cart_form__ = __webpack_require__(21);
 
 
@@ -1245,13 +1283,13 @@ if (document.getElementById('reactCartForm')) {
 }
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, exports) {
 
 module.exports = ReactDOM;
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1260,7 +1298,7 @@ module.exports = ReactDOM;
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__utils__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_superagent__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_superagent___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_superagent__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__cart__ = __webpack_require__(16);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__cart__ = __webpack_require__(17);
 
 
 
@@ -1384,7 +1422,7 @@ var CartBlock = function (_Component) {
 /* harmony default export */ __webpack_exports__["a"] = (CartBlock);
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 
@@ -1547,7 +1585,7 @@ Emitter.prototype.hasListeners = function (event) {
 };
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2243,7 +2281,7 @@ RequestBase.prototype._setTimeouts = function () {
 };
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2253,7 +2291,7 @@ RequestBase.prototype._setTimeouts = function () {
  * Module dependencies.
  */
 
-var utils = __webpack_require__(14);
+var utils = __webpack_require__(15);
 
 /**
  * Expose `ResponseBase`.
@@ -2381,7 +2419,7 @@ ResponseBase.prototype._setStatusProperties = function (status) {
 };
 
 /***/ }),
-/* 14 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2458,7 +2496,7 @@ exports.cleanHeader = function (header, changesOrigin) {
 };
 
 /***/ }),
-/* 15 */
+/* 16 */
 /***/ (function(module, exports) {
 
 function Agent() {
@@ -2482,13 +2520,13 @@ Agent.prototype._setDefaults = function (req) {
 module.exports = Agent;
 
 /***/ }),
-/* 16 */
+/* 17 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_react__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_prop_types__ = __webpack_require__(17);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_prop_types__ = __webpack_require__(4);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_prop_types___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_prop_types__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__utils__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_superagent__ = __webpack_require__(2);
@@ -2516,14 +2554,6 @@ var Cart = function (_Component) {
   }
 
   babelHelpers.createClass(Cart, [{
-    key: 'formatPrice',
-    value: function formatPrice(priceObject) {
-      if (priceObject.currency_code === null) {
-        return '';
-      }
-      return new Intl.NumberFormat(this.state.langCode, { style: 'currency', currency: priceObject.currency_code }).format(priceObject.number);
-    }
-  }, {
     key: 'doCartRefresh',
     value: function doCartRefresh() {
       var _this2 = this;
@@ -2580,12 +2610,12 @@ var Cart = function (_Component) {
               __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
                 'td',
                 null,
-                _this4.formatPrice(item.unit_price[0])
+                Object(__WEBPACK_IMPORTED_MODULE_2__utils__["b" /* formatPrice */])(item.unit_price[0])
               ),
               __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
                 'td',
                 null,
-                _this4.formatPrice(item.total_price[0])
+                Object(__WEBPACK_IMPORTED_MODULE_2__utils__["b" /* formatPrice */])(item.total_price[0])
               ),
               __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
                 'td',
@@ -2613,7 +2643,7 @@ var Cart = function (_Component) {
           'div',
           null,
           'Total: ',
-          this.formatPrice(this.state.cart.total_price[0])
+          Object(__WEBPACK_IMPORTED_MODULE_2__utils__["b" /* formatPrice */])(this.state.cart.total_price[0])
         )
       );
     }
@@ -2626,34 +2656,6 @@ Cart.propTypes = {
 };
 
 /* harmony default export */ __webpack_exports__["a"] = (Cart);
-
-/***/ }),
-/* 17 */
-/***/ (function(module, exports, __webpack_require__) {
-
-/**
- * Copyright (c) 2013-present, Facebook, Inc.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
-if (true) {
-  var REACT_ELEMENT_TYPE = typeof Symbol === 'function' && Symbol.for && Symbol.for('react.element') || 0xeac7;
-
-  var isValidElement = function isValidElement(object) {
-    return (typeof object === 'undefined' ? 'undefined' : babelHelpers.typeof(object)) === 'object' && object !== null && object.$$typeof === REACT_ELEMENT_TYPE;
-  };
-
-  // By explicitly using `prop-types` you are opting into new development behavior.
-  // http://fb.me/prop-types-in-prod
-  var throwOnDirectAccess = true;
-  module.exports = __webpack_require__(18)(isValidElement, throwOnDirectAccess);
-} else {
-  // By explicitly using `prop-types` you are opting into new production behavior.
-  // http://fb.me/prop-types-in-prod
-  module.exports = require('./factoryWithThrowingShims')();
-}
 
 /***/ }),
 /* 18 */
@@ -2669,12 +2671,12 @@ if (true) {
 
 
 
-var emptyFunction = __webpack_require__(4);
-var invariant = __webpack_require__(5);
-var warning = __webpack_require__(6);
+var emptyFunction = __webpack_require__(5);
+var invariant = __webpack_require__(6);
+var warning = __webpack_require__(7);
 var assign = __webpack_require__(19);
 
-var ReactPropTypesSecret = __webpack_require__(7);
+var ReactPropTypesSecret = __webpack_require__(8);
 var checkPropTypes = __webpack_require__(20);
 
 module.exports = function (isValidElement, throwOnDirectAccess) {
@@ -3288,9 +3290,9 @@ module.exports = shouldUseNative() ? Object.assign : function (target, source) {
 
 
 if (true) {
-  var invariant = __webpack_require__(5);
-  var warning = __webpack_require__(6);
-  var ReactPropTypesSecret = __webpack_require__(7);
+  var invariant = __webpack_require__(6);
+  var warning = __webpack_require__(7);
+  var ReactPropTypesSecret = __webpack_require__(8);
   var loggedTypeFailures = {};
 }
 
@@ -3348,6 +3350,8 @@ module.exports = checkPropTypes;
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__utils__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_superagent__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_superagent___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_superagent__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__cart__ = __webpack_require__(22);
+
 
 
 
@@ -3401,7 +3405,7 @@ var CartForm = function (_Component) {
           return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
             'div',
             { key: cart.order_id[0].value },
-            cart.order_id[0].value
+            __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_3__cart__["a" /* default */], { cart: cart })
           );
         })
       );
@@ -3411,6 +3415,957 @@ var CartForm = function (_Component) {
 }(__WEBPACK_IMPORTED_MODULE_0_react__["Component"]);
 
 /* harmony default export */ __webpack_exports__["a"] = (CartForm);
+
+/***/ }),
+/* 22 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_react__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_prop_types__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_prop_types___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_prop_types__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__utils__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_superagent__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_superagent___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_superagent__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_superagent_cache__ = __webpack_require__(23);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_superagent_cache___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4_superagent_cache__);
+
+
+
+
+
+
+__WEBPACK_IMPORTED_MODULE_4_superagent_cache___default()(__WEBPACK_IMPORTED_MODULE_3_superagent___default.a);
+
+var Cart = function (_Component) {
+  babelHelpers.inherits(Cart, _Component);
+
+  function Cart(props) {
+    babelHelpers.classCallCheck(this, Cart);
+
+    var _this = babelHelpers.possibleConstructorReturn(this, (Cart.__proto__ || Object.getPrototypeOf(Cart)).call(this, props));
+
+    _this.state = {
+      // Copy the prop into state so we can refresh it.
+      cart: props.cart,
+      cartId: props.cart.order_id[0].value,
+      langCode: drupalSettings.path.currentLanguage
+    };
+    return _this;
+  }
+
+  babelHelpers.createClass(Cart, [{
+    key: 'doCartRefresh',
+    value: function doCartRefresh() {
+      var _this2 = this;
+
+      var url = __WEBPACK_IMPORTED_MODULE_2__utils__["a" /* baseUrl */] + '/cart/' + this.state.cartId + '?_format=json';
+      __WEBPACK_IMPORTED_MODULE_3_superagent___default.a.get(url).end(function (err, _ref) {
+        var body = _ref.body;
+
+        _this2.setState({
+          cart: body
+        });
+      });
+    }
+  }, {
+    key: 'doItemDelete',
+    value: function doItemDelete(item, event) {
+      var _this3 = this;
+
+      event.preventDefault();
+      __WEBPACK_IMPORTED_MODULE_3_superagent___default.a.delete(__WEBPACK_IMPORTED_MODULE_2__utils__["a" /* baseUrl */] + '/cart/' + this.state.cartId + '/items/' + item.order_item_id[0].value + '?_format=json').end(function (err, _ref2) {
+        var body = _ref2.body;
+
+        _this3.doCartRefresh();
+      });
+    }
+  }, {
+    key: 'doItemsUpdate',
+    value: function doItemsUpdate() {
+      var _this4 = this;
+
+      event.preventDefault();
+      __WEBPACK_IMPORTED_MODULE_3_superagent___default.a.patch(__WEBPACK_IMPORTED_MODULE_2__utils__["a" /* baseUrl */] + '/cart/' + this.state.cartId + '/items?_format=json').set('Content-Type', 'application/json').send(JSON.stringify(this.state.cart.order_items)).end(function (err, _ref3) {
+        var body = _ref3.body;
+
+        _this4.setState({
+          cart: body
+        });
+      });
+    }
+  }, {
+    key: 'handleQuantityChange',
+    value: function handleQuantityChange(item, _key, event) {
+      // Update the items quantity.
+      item.quantity[0].value = event.target.value;
+      var cart = this.state.cart;
+      cart.order_items[_key] = item;
+      this.setState({
+        cart: cart
+      });
+    }
+  }, {
+    key: 'render',
+    value: function render() {
+      var _this5 = this;
+
+      return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+        'div',
+        null,
+        __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+          'table',
+          null,
+          __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+            'tr',
+            null,
+            __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+              'th',
+              null,
+              'Item'
+            ),
+            __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+              'th',
+              null,
+              'Price'
+            ),
+            __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+              'th',
+              null,
+              'Quantity'
+            ),
+            __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+              'th',
+              null,
+              'Total'
+            ),
+            __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+              'th',
+              null,
+              'Remove'
+            )
+          ),
+          this.state.cart.order_items.map(function (item, _key) {
+            return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+              'tr',
+              { key: item.order_item_id[0].value },
+              __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+                'td',
+                null,
+                item.title[0].value
+              ),
+              __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+                'td',
+                null,
+                Object(__WEBPACK_IMPORTED_MODULE_2__utils__["b" /* formatPrice */])(item.unit_price[0])
+              ),
+              __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+                'td',
+                null,
+                __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement('input', {
+                  type: 'number',
+                  value: parseInt(item.quantity[0].value),
+                  onChange: _this5.handleQuantityChange.bind(_this5, item, _key)
+                })
+              ),
+              __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+                'td',
+                null,
+                Object(__WEBPACK_IMPORTED_MODULE_2__utils__["b" /* formatPrice */])(item.total_price[0])
+              ),
+              __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+                'td',
+                null,
+                __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+                  'button',
+                  { onClick: _this5.doItemDelete.bind(_this5, item) },
+                  __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+                    'span',
+                    null,
+                    'Remove'
+                  )
+                )
+              )
+            );
+          }),
+          __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+            'tfoot',
+            null,
+            __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement('td', { colSpan: '2' }),
+            __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+              'td',
+              null,
+              __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+                'button',
+                { onClick: this.doItemsUpdate.bind(this) },
+                'Update quantities'
+              )
+            ),
+            __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+              'td',
+              null,
+              __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+                'div',
+                null,
+                Object(__WEBPACK_IMPORTED_MODULE_2__utils__["b" /* formatPrice */])(this.state.cart.total_price[0])
+              )
+            )
+          )
+        ),
+        __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+          'button',
+          null,
+          'Checkout'
+        )
+      );
+    }
+  }]);
+  return Cart;
+}(__WEBPACK_IMPORTED_MODULE_0_react__["Component"]);
+
+Cart.propTypes = {
+  cart: __WEBPACK_IMPORTED_MODULE_1_prop_types__["object"].isRequired
+};
+
+/* harmony default export */ __webpack_exports__["a"] = (Cart);
+
+/***/ }),
+/* 23 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var utils = __webpack_require__(24);
+
+/**
+ * superagentCache constructor
+ * @constructor
+ * @param {superagent} superagent
+ * @param {cache module} cache (optional)
+ * @param {object} defaults (optional)
+ */
+module.exports = function (superagent, cache, defaults) {
+
+  if (!superagent) throw 'superagent-cache requires a superagent instance.';
+
+  if (!superagent.patchedBySuperagentCache) {
+    superagent.cache = cache && cache.get ? cache : new (__webpack_require__(25))(cache);
+    superagent.defaults = defaults || {};
+    superagent.pendingRequests = {};
+    var Request = superagent.Request;
+    var props = utils.resetProps(superagent.defaults);
+    var supportedMethods = ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE'];
+    var cacheableMethods = ['GET', 'HEAD'];
+    superagent.patchedBySuperagentCache = true;
+
+    /**
+     * Whether to execute an http query if the cache does not have the generated key
+     * @param {boolean} doQuery
+     */
+    Request.prototype.doQuery = function (doQuery) {
+      props.doQuery = doQuery;
+      return this;
+    };
+
+    /**
+     * Remove the given params from the query object after executing an http query and before generating a cache key
+     * @param {array of strings} pruneQuery
+     */
+    Request.prototype.pruneQuery = function (pruneQuery) {
+      props.pruneQuery = pruneQuery;
+      return this;
+    };
+
+    /**
+     * Remove the given options from the headers object after executing an http query and before generating a cache key
+     * @param {boolean} pruneHeader
+     */
+    Request.prototype.pruneHeader = function (pruneHeader) {
+      props.pruneHeader = pruneHeader;
+      return this;
+    };
+
+    /**
+     * Execute some logic on superagent's http response object before caching and returning it
+     * @param {function} prune
+     */
+    Request.prototype.prune = function (prune) {
+      props.prune = prune;
+      return this;
+    };
+
+    /**
+     * Retrieve a top-level property from superagent's http response object before to cache and return
+     * @param {string} responseProp
+     */
+    Request.prototype.responseProp = function (responseProp) {
+      props.responseProp = responseProp;
+      return this;
+    };
+
+    /**
+     * Set an expiration for this key that will override the configured cache's default expiration
+     * @param {integer} expiration (seconds)
+     */
+    Request.prototype.expiration = function (expiration) {
+      props.expiration = expiration;
+      return this;
+    };
+
+    /**
+     * Whether to cache superagent's http response object when it "empty"--especially useful with .prune and .pruneQuery
+     * @param {boolean} cacheWhenEmpty
+     */
+    Request.prototype.cacheWhenEmpty = function (cacheWhenEmpty) {
+      props.cacheWhenEmpty = cacheWhenEmpty;
+      return this;
+    };
+
+    /**
+     * Whether to execute an http query regardless of whether the cache has the generated key
+     * @param {boolean} forceUpdate
+     */
+    Request.prototype.forceUpdate = function (forceUpdate) {
+      props.forceUpdate = typeof forceUpdate === 'boolean' ? forceUpdate : true;
+      return this;
+    };
+
+    /**
+     * Whether to execute identical network calls.
+     * When used, calls made for resources that are already pending will not be made, but will
+     * be responded to with the response from the already pending call.
+     * @param {boolean} preventDuplicateCalls
+     */
+    Request.prototype.preventDuplicateCalls = function (preventDuplicateCalls) {
+      props.preventDuplicateCalls = typeof preventDuplicateCalls === 'boolean' ? preventDuplicateCalls : true;
+      return this;
+    };
+
+    /**
+     * Initialize a background refresh for the generated key and value
+     * @param {boolean | function} backgroundRefresh
+     */
+    Request.prototype.backgroundRefresh = function (backgroundRefresh) {
+      props.backgroundRefresh = typeof backgroundRefresh !== 'undefined' ? backgroundRefresh : true;
+      return this;
+    };
+
+    /**
+     * An alias for the .end function
+     */
+    Request.prototype._superagentCache_execute = Request.prototype.end;
+
+    /**
+     * Wraps the .end function so that .resetProps gets called--callable so that no caching logic takes place
+     */
+    Request.prototype._superagentCache_originalEnd = function (cb) {
+      props = utils.resetProps(superagent.defaults);
+      this._superagentCache_execute(cb);
+    };
+
+    /**
+     * Execute all caching and http logic
+     * @param {function} cb
+     */
+    Request.prototype.end = function (cb) {
+      var curProps = props;
+      props = utils.resetProps(superagent.defaults);
+      this.scRedirectsList = this.scRedirectsList || [];
+      this.scRedirectsList = this.scRedirectsList.concat(this._redirectList);
+      if (~supportedMethods.indexOf(this.method.toUpperCase())) {
+        var _this = this;
+        var key = utils.keygen(superagent, this, curProps);
+        if (~cacheableMethods.indexOf(this.method.toUpperCase())) {
+          superagent.cache.get(key, function (err, response) {
+            if (!err && response && !curProps.forceUpdate) {
+              utils.callbackExecutor(cb, err, response, key);
+            } else {
+              if (curProps.doQuery) {
+                if (curProps.preventDuplicateCalls) {
+                  if (!superagent.pendingRequests[key]) {
+                    superagent.pendingRequests[key] = [];
+                  } else {
+                    return superagent.pendingRequests[key].push(cb);
+                  }
+                }
+                _this._superagentCache_originalEnd(function (err, response) {
+                  if (err) {
+                    utils.handlePendingRequests(curProps, superagent, key, err, response);
+                    return utils.callbackExecutor(cb, err, response, key);
+                  } else if (!err && response) {
+                    response.redirects = _this.scRedirectsList;
+                    if (curProps.prune) {
+                      response = curProps.prune(response);
+                    } else if (curProps.responseProp) {
+                      response = response[curProps.responseProp] || null;
+                    } else {
+                      response = utils.gutResponse(response);
+                    }
+                    if (!utils.isEmpty(response) || curProps.cacheWhenEmpty) {
+                      var refresh = curProps.backgroundRefresh || null;
+                      if (typeof refresh == 'boolean') {
+                        refresh = utils.getBackgroundRefreshFunction(superagent, curProps);
+                      }
+                      superagent.cache.set(key, response, curProps.expiration, refresh, function () {
+                        utils.handlePendingRequests(curProps, superagent, key, err, response);
+                        return utils.callbackExecutor(cb, err, response, key);
+                      });
+                    } else {
+                      delete superagent.pendingRequests[key];
+                      return utils.callbackExecutor(cb, err, response, key);
+                    }
+                  }
+                });
+              } else {
+                return utils.callbackExecutor(cb, null, null, key);
+              }
+            }
+          });
+        } else {
+          this._superagentCache_originalEnd(function (err, response) {
+            if (err) {
+              return utils.callbackExecutor(cb, err, response, key);
+            }
+            if (!err && response) {
+              var keyGet = key.replace('"method":"' + _this.method + '"', '"method":"GET"');
+              var keyHead = key.replace('"method":"' + _this.method + '"', '"method":"HEAD"');
+              superagent.cache.del([keyGet, keyHead], function () {
+                utils.callbackExecutor(cb, err, response, key);
+              });
+            }
+          });
+        }
+      } else {
+        this._superagentCache_originalEnd(function (err, response) {
+          return utils.callbackExecutor(cb, err, response, undefined);
+        });
+      }
+    };
+  }
+};
+
+/***/ }),
+/* 24 */
+/***/ (function(module, exports) {
+
+module.exports = {
+  /**
+   * Generate a cache key unique to this query
+   * @param {superagent} agent
+   * @param {object} reg
+   * @param {object} cProps
+   */
+  keygen: function keygen(agent, req, cProps) {
+    var cleanParams = null;
+    var cleanOptions = null;
+    var params = this.getQueryParams(req);
+    var options = this.getHeaderOptions(req);
+    if (cProps.pruneQuery || cProps.pruneHeader) {
+      cleanParams = cProps.pruneQuery ? this.pruneObj(this.cloneObject(params), cProps.pruneQuery) : params;
+      cleanOptions = cProps.pruneHeader ? this.pruneObj(this.cloneObject(options), cProps.pruneHeader, true) : options;
+    }
+    return JSON.stringify({
+      nameSpace: agent.cache.nameSpace,
+      method: req.method,
+      uri: req.url,
+      params: cleanParams || params || null,
+      options: cleanOptions || options || null
+    });
+  },
+
+  /**
+   * Find and extract query params
+   * @param {object} reg
+   */
+  getQueryParams: function getQueryParams(req) {
+    if (req && req.qs && !this.isEmpty(req.qs)) {
+      return req.qs;
+    } else if (req && req.qsRaw) {
+      return this.arrayToObj(req.qsRaw);
+    } else if (req && req.req) {
+      return this.stringToObj(req.req.path);
+    } else if (req && req._query) {
+      return this.stringToObj(req._query.join('&'));
+    }
+    return null;
+  },
+
+  /**
+   * Find and extract headers
+   * @param {object} reg
+   */
+  getHeaderOptions: function getHeaderOptions(req) {
+    //I have to remove the User-Agent header ever since superagent 1.7.0
+    if (req && req._header) {
+      return this.pruneObj(req._header, ['User-Agent', 'user-agent']);
+    } else if (req && req.req && req.req._headers) {
+      return this.pruneObj(req.req._headers, ['User-Agent', 'user-agent']);
+    } else if (req && req.header) {
+      return this.pruneObj(req.header, ['User-Agent', 'user-agent']);
+    }
+    return null;
+  },
+
+  /**
+   * Convert an array to an object
+   * @param {array} arr
+   */
+  arrayToObj: function arrayToObj(arr) {
+    if (arr && arr.length) {
+      var obj = {};
+      for (var i = 0; i < arr.length; i++) {
+        var str = arr[i];
+        var kvArray = str.split('&');
+        for (var j = 0; j < kvArray.length; j++) {
+          var kvString = kvArray[j].split('=');
+          obj[kvString[0]] = kvString[1];
+        }
+      }
+      return obj;
+    }
+    return null;
+  },
+
+  /**
+   * Convert a string to an object
+   * @param {string} str
+   */
+  stringToObj: function stringToObj(str) {
+    if (str) {
+      var obj = {};
+      if (~str.indexOf('?')) {
+        var strs = str.split('?');
+        str = strs[1];
+      }
+      var kvArray = str.split('&');
+      for (var i = 0; i < kvArray.length; i++) {
+        var kvString = kvArray[i].split('=');
+        obj[kvString[0]] = kvString[1];
+      }
+      return obj;
+    }
+    return null;
+  },
+
+  /**
+   * Remove properties from an object
+   * @param {object} obj
+   * @param {array} props
+   * @param {boolean} isOptions
+   */
+  pruneObj: function pruneObj(obj, props, isOptions) {
+    for (var i = 0; i < props.length; i++) {
+      var prop = props[i];
+      if (isOptions) {
+        delete obj[prop.toLowerCase()];
+      }
+      delete obj[prop];
+    }
+    return obj;
+  },
+
+  /**
+   * Simplify superagent's http response object
+   * @param {object} r
+   */
+  gutResponse: function gutResponse(r) {
+    var newResponse = {};
+    newResponse.body = r.body;
+    newResponse.text = r.text;
+    newResponse.headers = r.headers;
+    newResponse.statusCode = r.statusCode;
+    newResponse.status = r.status;
+    newResponse.ok = r.ok;
+    return newResponse;
+  },
+
+  /**
+   * Determine whether a value is considered empty
+   * @param {*} val
+   */
+  isEmpty: function isEmpty(val) {
+    return val === false || val === null || (typeof val === 'undefined' ? 'undefined' : babelHelpers.typeof(val)) == 'object' && Object.keys(val).length == 0;
+  },
+
+  /**
+   * Return a clone of an object
+   * @param {object} obj
+   */
+  cloneObject: function cloneObject(obj) {
+    var newObj = {};
+    for (var attr in obj) {
+      if (obj.hasOwnProperty(attr)) {
+        newObj[attr] = obj[attr];
+      }
+    }
+    return newObj;
+  },
+
+  handlePendingRequests: function handlePendingRequests(curProps, superagent, key, err, response) {
+    if (curProps.preventDuplicateCalls) {
+      if (superagent.pendingRequests[key] && (!this.isEmpty(response) || curProps.cacheWhenEmpty)) {
+        var self = this;
+        var pendingRequests = superagent.pendingRequests[key];
+        pendingRequests.forEach(function (cb) {
+          self.callbackExecutor(cb, err, response, key);
+        });
+      }
+      delete superagent.pendingRequests[key];
+    }
+  },
+
+  /**
+   * Reset superagent-cache's default query properties using the defaults object
+   * @param {object} d
+   */
+  resetProps: function resetProps(d) {
+    return {
+      doQuery: typeof d.doQuery === 'boolean' ? d.doQuery : true,
+      cacheWhenEmpty: typeof d.cacheWhenEmpty === 'boolean' ? d.cacheWhenEmpty : true,
+      prune: d.prune,
+      pruneQuery: d.pruneQuery,
+      pruneHeader: d.pruneHeader,
+      responseProp: d.responseProp,
+      expiration: d.expiration,
+      forceUpdate: d.forceUpdate,
+      preventDuplicateCalls: d.preventDuplicateCalls,
+      backgroundRefresh: d.backgroundRefresh
+    };
+  },
+
+  /**
+   * Generate a background refresh query identical to the current query
+   * @param {superagent} agent
+   * @param {object} curProps
+   */
+  getBackgroundRefreshFunction: function getBackgroundRefreshFunction(agent, curProps) {
+    return function (key, cb) {
+      key = JSON.parse(key);
+      var method = key.method.toLowerCase();
+      var request = agent[method](key.uri).doQuery(curProps.doQuery).pruneQuery(curProps.pruneQuery).pruneHeader(curProps.pruneHeader).prune(curProps.prune).responseProp(curProps.responseProp).expiration(curProps.expiration).cacheWhenEmpty(curProps.cacheWhenEmpty);
+      if (key.params) {
+        request.query(key.params);
+      }
+      if (key.options) {
+        request.set(key.options);
+      }
+      request.end(cb);
+    };
+  },
+
+  /**
+   * Handle the varying number of callback output params
+   * @param {function} cb
+   * @param {object} err
+   * @param {object} response
+   * @param {string} key
+   */
+  callbackExecutor: function callbackExecutor(cb, err, response, key) {
+    if (cb.length === 1) {
+      cb(response);
+    } else if (cb.length > 1) {
+      cb(err, response, key);
+    } else {
+      throw new Error('UnsupportedCallbackException: Your .end() callback must pass at least one argument.');
+    }
+  }
+};
+
+/***/ }),
+/* 25 */
+/***/ (function(module, exports) {
+
+/**
+ * cacheModule constructor
+ * @param config: {
+ *    type:                           {string  | 'cache-module'}
+ *    verbose:                        {boolean | false},
+ *    defaultExpiration:              {integer | 900},
+ *    readOnly:                       {boolean | false},
+ *    checkOnPreviousEmpty:           {boolean | true},
+ *    backgroundRefreshIntervalCheck: {boolean | true},
+ *    backgroundRefreshInterval:      {integer | 60000},
+ *    backgroundRefreshMinTtl:        {integer | 70000},
+ *    storage:                        {string  | null},
+ *    storageMock:                    {object  | null}
+ * }
+ */
+function cacheModule(config) {
+  var self = this;
+  config = config || {};
+  self.type = config.type || 'cache-module';
+  self.verbose = config.verbose || false;
+  self.defaultExpiration = config.defaultExpiration || 900;
+  self.readOnly = config.readOnly || false;
+  self.checkOnPreviousEmpty = typeof config.checkOnPreviousEmpty === 'boolean' ? config.checkOnPreviousEmpty : true;
+  self.backgroundRefreshIntervalCheck = typeof config.backgroundRefreshIntervalCheck === 'boolean' ? config.backgroundRefreshIntervalCheck : true;
+  self.backgroundRefreshInterval = config.backgroundRefreshInterval || 60000;
+  self.backgroundRefreshMinTtl = config.backgroundRefreshMinTtl || 70000;
+  var store = null;
+  var storageMock = config.storageMock || false;
+  var backgroundRefreshEnabled = false;
+  var browser = typeof window !== 'undefined';
+  var cache = {
+    db: {},
+    expirations: {},
+    refreshKeys: {}
+  };
+  var storageKey;
+
+  setupBrowserStorage();
+  log(false, 'Cache-module client created with the following defaults:', { type: self.type, defaultExpiration: self.defaultExpiration, verbose: self.verbose, readOnly: self.readOnly });
+
+  /**
+   * Get the value associated with a given key
+   * @param {string} key
+   * @param {function} cb
+   */
+  self.get = function (key, cb) {
+    throwErrorIf(arguments.length < 2, 'ARGUMENT_EXCEPTION: .get() requires 2 arguments.');
+    log(false, 'get() called:', { key: key });
+    try {
+      var now = Date.now();
+      var expiration = cache.expirations[key];
+      if (expiration > now) {
+        cb(null, cache.db[key]);
+      } else {
+        expire(key);
+        cb(null, null);
+      }
+    } catch (err) {
+      cb({ name: 'GetException', message: err }, null);
+    }
+  };
+
+  /**
+   * Get multiple values given multiple keys
+   * @param {array} keys
+   * @param {function} cb
+   * @param {integer} index
+   */
+  self.mget = function (keys, cb, index) {
+    throwErrorIf(arguments.length < 2, 'ARGUMENT_EXCEPTION: .mget() requires 2 arguments.');
+    log(false, '.mget() called:', { keys: keys });
+    var values = {};
+    for (var i = 0; i < keys.length; i++) {
+      var key = keys[i];
+      self.get(key, function (err, response) {
+        if (response !== null) {
+          values[key] = response;
+        }
+      });
+    }
+    cb(null, values, index);
+  };
+
+  /**
+   * Associate a key and value and optionally set an expiration
+   * @param {string} key
+   * @param {string | object} value
+   * @param {integer} expiration
+   * @param {function} refresh
+   * @param {function} cb
+   */
+  self.set = function () {
+    throwErrorIf(arguments.length < 2, 'ARGUMENT_EXCEPTION: .set() requires at least 2 arguments.');
+    var key = arguments[0];
+    var value = arguments[1];
+    var expiration = arguments[2] || null;
+    var refresh = arguments.length == 5 ? arguments[3] : null;
+    var cb = arguments.length == 5 ? arguments[4] : arguments[3];
+    log(false, '.set() called:', { key: key, value: value });
+    if (!self.readOnly) {
+      try {
+        expiration = expiration ? expiration * 1000 : self.defaultExpiration * 1000;
+        var exp = expiration + Date.now();
+        cache.expirations[key] = exp;
+        cache.db[key] = value;
+        if (cb) cb();
+        if (refresh) {
+          cache.refreshKeys[key] = { expiration: exp, lifeSpan: expiration, refresh: refresh };
+          backgroundRefreshInit();
+        }
+        overwriteBrowserStorage();
+      } catch (err) {
+        log(true, '.set() failed for cache of type ' + self.type, { name: 'CacheModuleSetException', message: err });
+      }
+    }
+  };
+
+  /**
+   * Associate multiple keys with multiple values and optionally set expirations per function and/or key
+   * @param {object} obj
+   * @param {integer} expiration
+   * @param {function} cb
+   */
+  self.mset = function (obj, expiration, cb) {
+    throwErrorIf(arguments.length < 1, 'ARGUMENT_EXCEPTION: .mset() requires at least 1 argument.');
+    log(false, '.mset() called:', { data: obj });
+    for (var key in obj) {
+      if (obj.hasOwnProperty(key)) {
+        var tempExpiration = expiration || self.defaultExpiration;
+        var value = obj[key];
+        if ((typeof value === 'undefined' ? 'undefined' : babelHelpers.typeof(value)) === 'object' && value.cacheValue) {
+          tempExpiration = value.expiration || tempExpiration;
+          value = value.cacheValue;
+        }
+        self.set(key, value, tempExpiration);
+      }
+    }
+    if (cb) cb();
+  };
+
+  /**
+   * Delete the provided keys and their associated values
+   * @param {array} keys
+   * @param {function} cb
+   */
+  self.del = function (keys, cb) {
+    throwErrorIf(arguments.length < 1, 'ARGUMENT_EXCEPTION: .del() requires at least 1 argument.');
+    log(false, '.del() called:', { keys: keys });
+    if ((typeof keys === 'undefined' ? 'undefined' : babelHelpers.typeof(keys)) === 'object') {
+      for (var i = 0; i < keys.length; i++) {
+        var key = keys[i];
+        delete cache.db[key];
+        delete cache.expirations[key];
+        delete cache.refreshKeys[key];
+      }
+      if (cb) cb(null, keys.length);
+    } else {
+      delete cache.db[keys];
+      delete cache.expirations[keys];
+      delete cache.refreshKeys[keys];
+      if (cb) cb(null, 1);
+    }
+    overwriteBrowserStorage();
+  };
+
+  /**
+   * Flush all keys and values
+   * @param {function} cb
+   */
+  self.flush = function (cb) {
+    log(false, '.flush() called');
+    cache.db = {};
+    cache.expirations = {};
+    cache.refreshKeys = {};
+    if (cb) cb();
+    overwriteBrowserStorage();
+  };
+
+  /**
+   * Enable browser storage if desired and available
+   */
+  function setupBrowserStorage() {
+    if (browser || storageMock) {
+      if (storageMock) {
+        store = storageMock;
+        storageKey = 'cache-module-storage-mock';
+      } else {
+        var storageType = config.storage === 'local' || config.storage === 'session' ? config.storage : null;
+        store = storageType && (typeof Storage === 'undefined' ? 'undefined' : babelHelpers.typeof(Storage)) !== void 0 ? window[storageType + 'Storage'] : false;
+        storageKey = storageType ? 'cache-module-' + storageType + '-storage' : null;
+      }
+      if (store) {
+        var db = store.getItem(storageKey);
+        try {
+          cache = JSON.parse(db) || cache;
+        } catch (err) {/* Do nothing */}
+      }
+      // If storageType is set but store is not, the desired storage mechanism was not available
+      else if (storageType) {
+          log(true, 'Browser storage is not supported by this browser. Defaulting to an in-memory cache.');
+        }
+    }
+  }
+
+  /**
+   * Overwrite namespaced browser storage with current cache
+   */
+  function overwriteBrowserStorage() {
+    if (browser && store || storageMock) {
+      var db = cache;
+      try {
+        db = JSON.stringify(db);
+      } catch (err) {/* Do nothing */}
+      store.setItem(storageKey, db);
+    }
+  }
+
+  /**
+   * Throw a given error if error is true
+   * @param {boolean} error
+   * @param {string} message
+   */
+  function throwErrorIf(error, message) {
+    if (error) throw new Error(message);
+  }
+
+  /**
+   * Delete a given key from cache.db and cache.expirations but not from cache.refreshKeys
+   * @param {string} key
+   */
+  function expire(key) {
+    delete cache.db[key];
+    delete cache.expirations[key];
+    overwriteBrowserStorage();
+  }
+
+  /**
+   * Initialize background refresh
+   */
+  function backgroundRefreshInit() {
+    if (!backgroundRefreshEnabled) {
+      backgroundRefreshEnabled = true;
+      if (self.backgroundRefreshIntervalCheck) {
+        if (self.backgroundRefreshInterval > self.backgroundRefreshMinTtl) {
+          throw new Error('BACKGROUND_REFRESH_INTERVAL_EXCEPTION: backgroundRefreshInterval cannot be greater than backgroundRefreshMinTtl.');
+        }
+      }
+      setInterval(backgroundRefresh, self.backgroundRefreshInterval);
+    }
+  }
+
+  /**
+   * Handle the refresh callback from the consumer, save the data to redis.
+   *
+   * @param {string} key The key used to save.
+   * @param {Object} data refresh keys data.
+   * @param {Error|null} err consumer callback failure.
+   * @param {*} response The consumer response.
+   */
+  function handleRefreshResponse(key, data, err, response) {
+    if (!err) {
+      this.set(key, response, data.lifeSpan / 1000, data.refresh, function () {});
+    }
+  }
+
+  /**
+   * Refreshes all keys that were set with a refresh function
+   */
+  function backgroundRefresh() {
+    var keys = Object.keys(cache.refreshKeys);
+    keys.forEach(function (key) {
+      var data = cache.refreshKeys[key];
+      if (data.expiration - Date.now() < this.backgroundRefreshMinTtl) {
+        data.refresh(key, handleRefreshResponse.bind(this, key, data));
+      }
+    }, self);
+  }
+
+  /**
+   * Error logging logic
+   * @param {boolean} isError
+   * @param {string} message
+   * @param {object} data
+   */
+  function log(isError, message, data) {
+    if (self.verbose || isError) {
+      if (data) console.log(self.type + ': ' + message, data);else console.log(self.type + message);
+    }
+  }
+}
+
+module.exports = cacheModule;
 
 /***/ })
 /******/ ]);

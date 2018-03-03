@@ -26,8 +26,8 @@ class OrderItemNormalizer extends EntityNormalizer {
   protected $allowedFields = [
     'order_item_id',
     'uuid',
-    // Should we send the type?
-    // 'type',
+    // We have to send type so we can PATCH.
+    'type',
     'purchased_entity',
     'title',
     // Allow after https://www.drupal.org/project/commerce/issues/2916252.
