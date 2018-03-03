@@ -69,14 +69,6 @@ class CartItemsController implements ContainerInjectionInterface {
    *   The response.
    */
   public function delete(OrderInterface $commerce_order, OrderItemInterface $commerce_order_item) {
-    $carts = $this->cartProvider->getCartIds();
-    if (!in_array($commerce_order->id(), $carts)) {
-      throw new AccessDeniedHttpException();
-    }
-    if (!$commerce_order->hasItem($commerce_order_item)) {
-      throw new AccessDeniedHttpException();
-    }
-
     $commerce_order->_cart_api = TRUE;
     $this->cartManager->removeOrderItem($commerce_order, $commerce_order_item);
 
@@ -85,12 +77,20 @@ class CartItemsController implements ContainerInjectionInterface {
     return new ModifiedResourceResponse(NULL, 204);
   }
 
+  /**
+   * PATCH to update order items.
+   *
+   * @param \Drupal\commerce_order\Entity\OrderInterface $commerce_order
+   *   The order.
+   * @param \Symfony\Component\HttpFoundation\Request $request
+   *   The request.
+   *
+   * @return \Drupal\rest\ModifiedResourceResponse
+   *   The response.
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
+   */
   public function patch(OrderInterface $commerce_order, Request $request) {
-    $carts = $this->cartProvider->getCartIds();
-    if (!in_array($commerce_order->id(), $carts)) {
-      throw new AccessDeniedHttpException();
-    }
-
     $received = $request->getContent();
     $format = $request->getContentType();
     // @todo injection.

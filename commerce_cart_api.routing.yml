@@ -17,6 +17,7 @@ commerce_cart_api.cart_canonical:
   requirements:
     _access: 'TRUE'
     _permission: 'access cart'
+    _cart_api: 'TRUE'
     _format: 'json'
   options:
     parameters:
@@ -32,6 +33,7 @@ commerce_cart_api.cart_items_delete:
   requirements:
     _access: 'TRUE'
     _permission: 'access cart'
+    _cart_api: 'TRUE'
   options:
     parameters:
       commerce_order:
@@ -46,6 +48,7 @@ commerce_cart_api.cart_items_patch:
   requirements:
     _access: 'TRUE'
     _permission: 'access cart'
+    _cart_api: 'TRUE'
     _format: 'json'
     _content_type_format: 'json'
   options:

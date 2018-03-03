@@ -72,14 +72,6 @@ class CartController implements ContainerInjectionInterface {
    *   The resource response.
    */
   public function get(OrderInterface $commerce_order) {
-    $carts = $this->cartProvider->getCartIds();
-    if (!in_array($commerce_order->id(), $carts)) {
-      return (new ResourceResponse([], 404))
-        ->addCacheableDependency(
-          (new CacheableMetadata())->setCacheMaxAge(0)
-        );
-    }
-
     $commerce_order->_cart_api = TRUE;
     $response = new ResourceResponse($commerce_order);
     $response->addCacheableDependency($commerce_order);
