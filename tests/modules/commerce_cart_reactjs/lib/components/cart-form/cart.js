@@ -59,6 +59,11 @@ class Cart extends Component {
     })
   }
   render() {
+    if (this.state.cart.order_items.length === 0) {
+      return (
+        <div>No items, yet. Go shopping!</div>
+      );
+    }
     return(
       <div>
         <table>

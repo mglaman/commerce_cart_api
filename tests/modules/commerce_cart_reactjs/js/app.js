@@ -3511,6 +3511,13 @@ var Cart = function (_Component) {
     value: function render() {
       var _this5 = this;
 
+      if (this.state.cart.order_items.length === 0) {
+        return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+          'div',
+          null,
+          'No items, yet. Go shopping!'
+        );
+      }
       return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
         'div',
         null,
