@@ -23,6 +23,7 @@
     views: {
       icon: null,
     },
+    // @todo move to CartContentsItemsView
     removeItem(e) {
       const target = JSON.parse(e.target.value);
       const endpoint = Drupal.url(`cart/${target[0]}/items/${target[1]}?_format=json`);
@@ -100,7 +101,34 @@
       const template = Drupal.commerceCart.getTemplate({
         id: 'commerce_cart_js_block_contents',
         data:
+        '<div>' +
         '        <% _.each(carts, function(cart) { %>' +
+        '         <div data-cart-contents=\'<% print(JSON.stringify(cart)) %>\'></div>' +
+        '        <% }); %>' +
+        '</div>'
+      });
+      this.$el.html(template.render({
+        carts: this.model.getCarts(),
+      }));
+
+      // @todo Cart model and Collection.
+      this.$el.find('[data-cart-contents]').each(function () {
+        const contents = new Drupal.commerceCart.CartContentsItemsView({
+          el: this,
+        });
+        contents.render();
+      });
+    },
+  });
+  Drupal.commerceCart.CartContentsItemsView = Backbone.View.extend(/** @lends Drupal.commerceCart.CartContentsItemsView# */{
+    /**
+     * @inheritdoc
+     */
+    render() {
+      const template = Drupal.commerceCart.getTemplate({
+        id: 'commerce_cart_js_block_item_contents',
+        data:
+        '        <div>\n' +
         '        <table class="cart-block--cart-table"><tbody>\n' +
         '        <% _.each(cart.order_items, function(orderItem) { %>' +
         '            <tr>\n' +
@@ -111,10 +139,10 @@
         '            </tr>\n' +
         '        <% }); %>' +
         '          </tbody>\n</table>\n' +
-        '        <% }); %>'
+        '        </div>'
       });
       this.$el.html(template.render({
-        carts: this.model.getCarts(),
+        cart: this.$el.data('cart-contents')
       }));
     },
   });

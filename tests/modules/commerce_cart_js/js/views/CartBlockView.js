@@ -65,10 +65,28 @@
 
       var template = Drupal.commerceCart.getTemplate({
         id: 'commerce_cart_js_block_contents',
-        data: '        <% _.each(carts, function(cart) { %>' + '        <table class="cart-block--cart-table"><tbody>\n' + '        <% _.each(cart.order_items, function(orderItem) { %>' + '            <tr>\n' + '              <td class="cart-block--cart-table__quantity"><% print(parseInt(orderItem.quantity)) %>&nbsp;x</td>\n' + '              <td class="cart-block--cart-table__title"><%- orderItem.title %></td>\n' + '              <td class="cart-block--cart-table__price"><%= orderItem.total_price.formatted %></td>\n' + '              <td class="cart-block--cart-table__remove"><button value="<% print(JSON.stringify([cart.order_id, orderItem.order_item_id]))  %>">x</button></td>' + '            </tr>\n' + '        <% }); %>' + '          </tbody>\n</table>\n' + '        <% }); %>'
+        data: '<div>' + '        <% _.each(carts, function(cart) { %>' + '         <div data-cart-contents=\'<% print(JSON.stringify(cart)) %>\'></div>' + '        <% }); %>' + '</div>'
       });
       this.$el.html(template.render({
         carts: this.model.getCarts()
+      }));
+
+      this.$el.find('[data-cart-contents]').each(function () {
+        var contents = new Drupal.commerceCart.CartContentsItemsView({
+          el: this
+        });
+        contents.render();
+      });
+    }
+  });
+  Drupal.commerceCart.CartContentsItemsView = Backbone.View.extend({
+    render: function render() {
+      var template = Drupal.commerceCart.getTemplate({
+        id: 'commerce_cart_js_block_item_contents',
+        data: '        <% console.log(cart) %><div>\n' + '        <table class="cart-block--cart-table"><tbody>\n' + '        <% _.each(cart.order_items, function(orderItem) { %>' + '            <tr>\n' + '              <td class="cart-block--cart-table__quantity"><% print(parseInt(orderItem.quantity)) %>&nbsp;x</td>\n' + '              <td class="cart-block--cart-table__title"><%- orderItem.title %></td>\n' + '              <td class="cart-block--cart-table__price"><%= orderItem.total_price.formatted %></td>\n' + '              <td class="cart-block--cart-table__remove"><button value="<% print(JSON.stringify([cart.order_id, orderItem.order_item_id]))  %>">x</button></td>' + '            </tr>\n' + '        <% }); %>' + '          </tbody>\n</table>\n' + '        </div>'
+      });
+      this.$el.html(template.render({
+        cart: this.$el.data('cart-contents')
       }));
     }
   });
