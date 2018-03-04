@@ -1,0 +1,13 @@
+cart:
+  version: VERSION
+  js:
+    js/cart.js: { }
+    js/models/CartBlock.js: { }
+    js/views/CartBlockView.js: { }
+  dependencies:
+    - core/jquery
+    - core/drupal
+    - core/drupalSettings
+    - core/backbone
+    - core/underscore
+    - commerce_cart/cart_block
