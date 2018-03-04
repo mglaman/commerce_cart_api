@@ -6,6 +6,9 @@
 **/
 
 (function ($, Drupal, Backbone) {
+  var cartCount = 0;
+  var isOpen = false;
+  var isOutsideHorizontal = false;
   Drupal.commerceCart.CartBlockView = Backbone.View.extend({
     initialize: function initialize() {
       this.listenTo(this.model, 'cartsLoaded', this.render);
@@ -13,10 +16,8 @@
 
 
     events: {
-      'click .cart-block--cart-table__remove button': 'removeItem'
-    },
-    views: {
-      icon: null
+      'click .cart-block--cart-table__remove button': 'removeItem',
+      'click .cart-block--link__expand': 'expandContents'
     },
     removeItem: function removeItem(e) {
       var _this = this;
@@ -30,7 +31,26 @@
         return _this.model.fetchCarts();
       });
     },
+    expandContents: function expandContents(e) {
+      e.preventDefault();
+      if (cartCount > 0) {
+        var $cart = $('.cart--cart-block');
+        var $cartContents = $cart.find('.cart-block--contents');
+
+        var windowWidth = $(window).width();
+        var cartWidth = $cartContents.width() + $cart.offset().left;
+
+        isOutsideHorizontal = cartWidth > windowWidth;
+        if (isOutsideHorizontal) {
+          $cartContents.addClass('is-outside-horizontal');
+        }
+
+        $cartContents.toggleClass('cart-block--contents__expanded').slideToggle();
+        isOpen = !isOpen;
+      }
+    },
     render: function render() {
+      cartCount = this.model.getCount();
       var template = Drupal.commerceCart.getTemplate({
         id: 'commerce_cart_js_block',
         data: '<div class="cart--cart-block">\n' + '  <div class="cart-block--summary">\n' + '    <a class="cart-block--link__expand" href="<%= url %>">\n' + '      <span class="cart-block--summary__icon" />\n' + '      <span class="cart-block--summary__count"><%= count_text %></span>\n' + '    </a>\n' + '  </div>\n' + '<% if (count > 0) { %>' + '  <div class="cart-block--contents">\n' + '    <div class="cart-block--contents__inner">\n' + '      <div class="cart-block--contents__items">\n' + '      </div>\n' + '      <div class="cart-block--contents__links">\n' + '        <%= links %>\n' + '      </div>\n' + '    </div>\n' + '  </div>' + '<% } %>' + '</div>\n'
@@ -44,6 +64,9 @@
         links: this.model.getLinks(),
         carts: this.model.getCarts()
       }));
+      if (isOpen) {
+        this.$el.find('.cart-block--contents').addClass('cart-block--contents__expanded').addClass('is-outside-horizontal', isOutsideHorizontal).show();
+      }
 
       var icon = new Drupal.commerceCart.CartIconView({
         el: this.$el.find('.cart-block--summary__icon'),
@@ -73,7 +96,8 @@
 
       this.$el.find('[data-cart-contents]').each(function () {
         var contents = new Drupal.commerceCart.CartContentsItemsView({
-          el: this
+          el: this,
+          model: this.model
         });
         contents.render();
       });
@@ -83,7 +107,7 @@
     render: function render() {
       var template = Drupal.commerceCart.getTemplate({
         id: 'commerce_cart_js_block_item_contents',
-        data: '        <% console.log(cart) %><div>\n' + '        <table class="cart-block--cart-table"><tbody>\n' + '        <% _.each(cart.order_items, function(orderItem) { %>' + '            <tr>\n' + '              <td class="cart-block--cart-table__quantity"><% print(parseInt(orderItem.quantity)) %>&nbsp;x</td>\n' + '              <td class="cart-block--cart-table__title"><%- orderItem.title %></td>\n' + '              <td class="cart-block--cart-table__price"><%= orderItem.total_price.formatted %></td>\n' + '              <td class="cart-block--cart-table__remove"><button value="<% print(JSON.stringify([cart.order_id, orderItem.order_item_id]))  %>">x</button></td>' + '            </tr>\n' + '        <% }); %>' + '          </tbody>\n</table>\n' + '        </div>'
+        data: '        <div>\n' + '        <table class="cart-block--cart-table"><tbody>\n' + '        <% _.each(cart.order_items, function(orderItem) { %>' + '            <tr>\n' + '              <td class="cart-block--cart-table__quantity"><% print(parseInt(orderItem.quantity)) %>&nbsp;x</td>\n' + '              <td class="cart-block--cart-table__title"><%- orderItem.title %></td>\n' + '              <td class="cart-block--cart-table__price"><%= orderItem.total_price.formatted %></td>\n' + '              <td class="cart-block--cart-table__remove"><button value="<% print(JSON.stringify([cart.order_id, orderItem.order_item_id]))  %>">x</button></td>' + '            </tr>\n' + '        <% }); %>' + '          </tbody>\n</table>\n' + '        </div>'
       });
       this.$el.html(template.render({
         cart: this.$el.data('cart-contents')

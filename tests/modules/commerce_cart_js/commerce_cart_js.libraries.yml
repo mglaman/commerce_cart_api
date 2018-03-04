@@ -1,5 +1,10 @@
 cart:
   version: VERSION
+  css:
+    layout:
+      css/commerce_cart.layout.css: {}
+    theme:
+      css/commerce_cart.theme.css: {}
   js:
     js/cart.js: { }
     js/models/CartBlock.js: { }
@@ -12,4 +17,3 @@ cart:
     - core/drupalSettings
     - core/backbone
     - core/underscore
-    - commerce_cart/cart_block

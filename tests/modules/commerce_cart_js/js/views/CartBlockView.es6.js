@@ -4,6 +4,9 @@
  */
 
 (function ($, Drupal, Backbone) {
+  let cartCount = 0;
+  let isOpen = false;
+  let isOutsideHorizontal = false;
   Drupal.commerceCart.CartBlockView = Backbone.View.extend(/** @lends Drupal.commerceCart.CartBlockView# */{
     /**
      * Adjusts the body element with the toolbar position and dimension changes.
@@ -17,13 +20,9 @@
     },
 
     events: {
-      // @todo add click event for .cart-block--link__expand to replace Commerce Cart JS.
-      'click .cart-block--cart-table__remove button': 'removeItem'
+      'click .cart-block--cart-table__remove button': 'removeItem',
+      'click .cart-block--link__expand': 'expandContents'
     },
-    views: {
-      icon: null,
-    },
-    // @todo move to CartContentsItemsView
     removeItem(e) {
       const target = JSON.parse(e.target.value);
       const endpoint = Drupal.url(`cart/${target[0]}/items/${target[1]}?_format=json`);
@@ -35,11 +34,32 @@
         .then((res) => {})
         .finally(() => this.model.fetchCarts());
     },
+    expandContents(e) {
+      e.preventDefault();
+      if (cartCount > 0) {
+        const $cart = $('.cart--cart-block');
+        const $cartContents = $cart.find('.cart-block--contents');
+        // Get the shopping cart width + the offset to the left.
+        const windowWidth = $(window).width();
+        const cartWidth = $cartContents.width() + $cart.offset().left;
+        // If the cart goes out of the viewport we should align it right.
+        isOutsideHorizontal = cartWidth > windowWidth;
+        if (isOutsideHorizontal) {
+          $cartContents.addClass('is-outside-horizontal');
+        }
+        // Toggle the expanded class.
+        $cartContents
+          .toggleClass('cart-block--contents__expanded')
+          .slideToggle();
+        isOpen = !isOpen;
+      }
+    },
 
     /**
      * @inheritdoc
      */
     render() {
+      cartCount = this.model.getCount();
       const template = Drupal.commerceCart.getTemplate({
         id: 'commerce_cart_js_block',
         data: '<div class="cart--cart-block">\n' +
@@ -75,6 +95,14 @@
         links: this.model.getLinks(),
         carts: this.model.getCarts(),
       }));
+
+      // Hack to fix cart block contents disappearing on order item remove.
+      if (isOpen) {
+        this.$el.find('.cart-block--contents')
+          .addClass('cart-block--contents__expanded')
+          .addClass('is-outside-horizontal', isOutsideHorizontal)
+          .show();
+      }
 
       const icon = new Drupal.commerceCart.CartIconView({
         el: this.$el.find('.cart-block--summary__icon'),
@@ -115,12 +143,14 @@
       this.$el.find('[data-cart-contents]').each(function () {
         const contents = new Drupal.commerceCart.CartContentsItemsView({
           el: this,
+          model: this.model
         });
         contents.render();
       });
     },
   });
   Drupal.commerceCart.CartContentsItemsView = Backbone.View.extend(/** @lends Drupal.commerceCart.CartContentsItemsView# */{
+
     /**
      * @inheritdoc
      */
