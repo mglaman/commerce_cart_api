@@ -4,8 +4,10 @@ cart:
     js/cart.js: { }
     js/models/CartBlock.js: { }
     js/views/CartBlockView.js: { }
+    js/views/CartIcon.js: { }
   dependencies:
     - core/jquery
+    - core/jquery.once
     - core/drupal
     - core/drupalSettings
     - core/backbone

@@ -11,7 +11,7 @@
    *
    * @augments Backbone.Model
    */
-  Drupal.commerceCart.CartBlockModel = Backbone.Model.extend(/** @lends Drupal.commerceCart.CartBlockModell# */{
+  Drupal.commerceCart.CartBlockModel = Backbone.Model.extend(/** @lends Drupal.commerceCart.CartBlockModel# */{
 
     /**
      * @type {object}
@@ -39,7 +39,7 @@
        * @type {Object}
        */
       countText: {
-        singular: '@count item',
+        singular: '1 item',
         plural: '@count items'
       },
 
@@ -51,7 +51,9 @@
       /**
        * @type {Array}
        */
-      links: [],
+      links: [
+        `<a href="${Drupal.url('cart')}">${Drupal.t('View cart')}</a>`
+      ],
     },
 
     getUrl() {
@@ -64,10 +66,16 @@
       return this.get('count');
     },
     getCountPlural() {
-      return this.get('countText').singular;
+      return this.get('countText').plural;
     },
     getCountSingular() {
-      return this.get('countText').plural;
+      return this.get('countText').singular;
+    },
+    getLinks() {
+      return this.get('links');
+    },
+    getCarts() {
+      return this.get('carts');
     },
     fetchCarts() {
       // @todo will not work on IE11 w/o a polyfill.
@@ -83,6 +91,7 @@
           count += json[i].order_items.length;
         }
         this.set('count', count);
+        this.set('carts', json);
         this.trigger('cartsLoaded', this);
       });
 

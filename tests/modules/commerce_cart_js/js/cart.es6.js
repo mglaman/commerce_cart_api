@@ -3,9 +3,12 @@
 
   // Use Mustache.js style formatting (and Twig)
   // @see http://underscorejs.org/#template
+  // @todo This breaks conditionals within the template.
+  /*
   _.templateSettings = {
     interpolate: /\{\{(.+?)\}\}/g
   };
+  */
   Drupal.commerceCart = {
     getTemplate(data) {
       const id = data.id;

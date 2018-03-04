@@ -8,9 +8,6 @@
 (function ($, _, Drupal, drupalSettings) {
   var cache = {};
 
-  _.templateSettings = {
-    interpolate: /\{\{(.+?)\}\}/g
-  };
   Drupal.commerceCart = {
     getTemplate: function getTemplate(data) {
       var id = data.id;

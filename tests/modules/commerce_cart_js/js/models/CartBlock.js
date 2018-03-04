@@ -15,13 +15,13 @@
       carts: [],
 
       countText: {
-        singular: '@count item',
+        singular: '1 item',
         plural: '@count items'
       },
 
       url: '',
 
-      links: []
+      links: ['<a href="' + Drupal.url('cart') + '">' + Drupal.t('View cart') + '</a>']
     },
 
     getUrl: function getUrl() {
@@ -34,10 +34,16 @@
       return this.get('count');
     },
     getCountPlural: function getCountPlural() {
-      return this.get('countText').singular;
+      return this.get('countText').plural;
     },
     getCountSingular: function getCountSingular() {
-      return this.get('countText').plural;
+      return this.get('countText').singular;
+    },
+    getLinks: function getLinks() {
+      return this.get('links');
+    },
+    getCarts: function getCarts() {
+      return this.get('carts');
     },
     fetchCarts: function fetchCarts() {
       var _this = this;
@@ -53,6 +59,7 @@
           count += json[i].order_items.length;
         }
         _this.set('count', count);
+        _this.set('carts', json);
         _this.trigger('cartsLoaded', _this);
       });
     }

@@ -37,11 +37,11 @@ class FieldNormalizer extends CoreFieldNormalizer {
     /** @var \Drupal\Core\Field\FieldItemListInterface $field_item */
     $cardinality = $field_item->getFieldDefinition()->getFieldStorageDefinition()->getCardinality();
     $data = parent::normalize($field_item, $format, $context);
-    if (empty($data)) {
-      return NULL;
-    }
     if ($cardinality > 1 || $cardinality == FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED) {
       return $data;
+    }
+    if (empty($data)) {
+      return NULL;
     }
     return reset($data);
   }
@@ -55,6 +55,5 @@ class FieldNormalizer extends CoreFieldNormalizer {
     }
     return parent::denormalize($data, $class, $format, $context);
   }
-
 
 }
