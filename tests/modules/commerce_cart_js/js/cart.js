@@ -9,6 +9,26 @@
   var cache = {};
 
   Drupal.commerceCart = {
+    models: [],
+    views: [],
+    fetchCarts: function fetchCarts() {
+      var data = fetch(Drupal.url('cart?_format=json'), {
+        credentials: 'include'
+      });
+      data.then(function (res) {
+        return res.json();
+      }).then(function (json) {
+        var count = 0;
+        for (var i in json) {
+          count += json[i].order_items.length;
+        }
+        _.each(Drupal.commerceCart.models, function (model) {
+          model.set('count', count);
+          model.set('carts', json);
+          model.trigger('cartsLoaded', model);
+        });
+      });
+    },
     getTemplate: function getTemplate(data) {
       var id = data.id;
       if (!cache.hasOwnProperty(id)) {
@@ -24,11 +44,13 @@
     attach: function attach(context) {
       $(context).find('#commerce_cart_js_block').once('cart-block-render').each(function () {
         var model = new Drupal.commerceCart.CartBlockModel(drupalSettings.cartBlock.context);
+        Drupal.commerceCart.models.push(model);
         var view = new Drupal.commerceCart.CartBlockView({
           el: this,
           model: model
         });
-        model.fetchCarts();
+        Drupal.commerceCart.views.push(view);
+        Drupal.commerceCart.fetchCarts();
       });
     }
   };

@@ -44,24 +44,6 @@
     },
     getCarts: function getCarts() {
       return this.get('carts');
-    },
-    fetchCarts: function fetchCarts() {
-      var _this = this;
-
-      var data = fetch(Drupal.url('cart?_format=json'), {
-        credentials: 'include'
-      });
-      data.then(function (res) {
-        return res.json();
-      }).then(function (json) {
-        var count = 0;
-        for (var i in json) {
-          count += json[i].order_items.length;
-        }
-        _this.set('count', count);
-        _this.set('carts', json);
-        _this.trigger('cartsLoaded', _this);
-      });
     }
   });
 })(Backbone, Drupal);

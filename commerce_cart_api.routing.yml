@@ -58,7 +58,7 @@ commerce_cart_api.cart_items_patch:
     _auth: ['cookie']
 
 commerce_cart_api.cat_add_items:
-  path: '/cart/items'
+  path: '/cart/items/add'
   defaults:
     _controller: 'Drupal\commerce_cart_api\Controller\CartItemsController::addItems'
   methods: [POST]

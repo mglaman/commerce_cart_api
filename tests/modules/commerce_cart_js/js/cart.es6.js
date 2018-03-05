@@ -10,6 +10,28 @@
   };
   */
   Drupal.commerceCart = {
+    models: [],
+    views: [],
+    fetchCarts() {
+      // @todo will not work on IE11 w/o a polyfill.
+      let data = fetch(Drupal.url(`cart?_format=json`), {
+        // By default cookies are not passed, and we need the session cookie!
+        credentials: 'include'
+      });
+      data.then((res) => {
+        return res.json();
+      }).then((json) => {
+        let count = 0;
+        for (let i in json) {
+          count += json[i].order_items.length;
+        }
+        _.each(Drupal.commerceCart.models, (model) => {
+          model.set('count', count);
+          model.set('carts', json);
+          model.trigger('cartsLoaded', model);
+        });
+      });
+    },
     getTemplate(data) {
       const id = data.id;
       if (!cache.hasOwnProperty(id)) {
@@ -40,11 +62,13 @@
         const model = new Drupal.commerceCart.CartBlockModel(
           drupalSettings.cartBlock.context
         );
+        Drupal.commerceCart.models.push(model);
         const view = new Drupal.commerceCart.CartBlockView({
           el: this,
           model,
         });
-        model.fetchCarts();
+        Drupal.commerceCart.views.push(view);
+        Drupal.commerceCart.fetchCarts();
       });
     }
   };

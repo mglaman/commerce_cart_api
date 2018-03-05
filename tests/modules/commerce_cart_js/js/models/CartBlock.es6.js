@@ -76,25 +76,6 @@
     },
     getCarts() {
       return this.get('carts');
-    },
-    fetchCarts() {
-      // @todo will not work on IE11 w/o a polyfill.
-      let data = fetch(Drupal.url(`cart?_format=json`), {
-        // By default cookies are not passed, and we need the session cookie!
-        credentials: 'include'
-      });
-      data.then((res) => {
-        return res.json();
-      }).then((json) => {
-        let count = 0;
-        for (let i in json) {
-          count += json[i].order_items.length;
-        }
-        this.set('count', count);
-        this.set('carts', json);
-        this.trigger('cartsLoaded', this);
-      });
-
     }
   });
 }(Backbone, Drupal));

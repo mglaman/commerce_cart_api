@@ -20,15 +20,13 @@
       'click .cart-block--link__expand': 'expandContents'
     },
     removeItem: function removeItem(e) {
-      var _this = this;
-
       var target = JSON.parse(e.target.value);
       var endpoint = Drupal.url('cart/' + target[0] + '/items/' + target[1] + '?_format=json');
       fetch(endpoint, {
         credentials: 'include',
         method: 'delete'
       }).then(function (res) {}).finally(function () {
-        return _this.model.fetchCarts();
+        return Drupal.commerceCart.fetchCarts();
       });
     },
     expandContents: function expandContents(e) {
@@ -64,6 +62,7 @@
         links: this.model.getLinks(),
         carts: this.model.getCarts()
       }));
+
       if (isOpen) {
         this.$el.find('.cart-block--contents').addClass('cart-block--contents__expanded').addClass('is-outside-horizontal', isOutsideHorizontal).show();
       }
@@ -80,38 +79,6 @@
       contents.render();
 
       Drupal.attachBehaviors();
-    }
-  });
-
-  Drupal.commerceCart.CartContentsView = Backbone.View.extend({
-    render: function render() {
-
-      var template = Drupal.commerceCart.getTemplate({
-        id: 'commerce_cart_js_block_contents',
-        data: '<div>' + '        <% _.each(carts, function(cart) { %>' + '         <div data-cart-contents=\'<% print(JSON.stringify(cart)) %>\'></div>' + '        <% }); %>' + '</div>'
-      });
-      this.$el.html(template.render({
-        carts: this.model.getCarts()
-      }));
-
-      this.$el.find('[data-cart-contents]').each(function () {
-        var contents = new Drupal.commerceCart.CartContentsItemsView({
-          el: this,
-          model: this.model
-        });
-        contents.render();
-      });
-    }
-  });
-  Drupal.commerceCart.CartContentsItemsView = Backbone.View.extend({
-    render: function render() {
-      var template = Drupal.commerceCart.getTemplate({
-        id: 'commerce_cart_js_block_item_contents',
-        data: '        <div>\n' + '        <table class="cart-block--cart-table"><tbody>\n' + '        <% _.each(cart.order_items, function(orderItem) { %>' + '            <tr>\n' + '              <td class="cart-block--cart-table__quantity"><% print(parseInt(orderItem.quantity)) %>&nbsp;x</td>\n' + '              <td class="cart-block--cart-table__title"><%- orderItem.title %></td>\n' + '              <td class="cart-block--cart-table__price"><%= orderItem.total_price.formatted %></td>\n' + '              <td class="cart-block--cart-table__remove"><button value="<% print(JSON.stringify([cart.order_id, orderItem.order_item_id]))  %>">x</button></td>' + '            </tr>\n' + '        <% }); %>' + '          </tbody>\n</table>\n' + '        </div>'
-      });
-      this.$el.html(template.render({
-        cart: this.$el.data('cart-contents')
-      }));
     }
   });
 })(jQuery, Drupal, Backbone);
