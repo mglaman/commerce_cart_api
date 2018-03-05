@@ -56,6 +56,10 @@ class CartController implements ContainerInjectionInterface {
       $cart->_cart_api = TRUE;
       $response->addCacheableDependency($cart);
     }
+    $response->getCacheableMetadata()->addCacheContexts([
+      'store',
+      'cart',
+    ]);
     return $response;
   }
 
