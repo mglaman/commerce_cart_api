@@ -1,27 +1,17 @@
 services:
-  serializer.commerce_cart_api.cart:
-      class: Drupal\commerce_cart_api\Normalizer\CartNormalizer
-      tags:
-        - { name: normalizer }
-      arguments: ['@entity.manager']
-  serializer.commerce_cart_api.order_item:
-      class: Drupal\commerce_cart_api\Normalizer\OrderItemNormalizer
-      tags:
-        - { name: normalizer }
-      arguments: ['@entity.manager']
-  serialization.commerce_cart_api.price:
+  commerce_cart_api.normalizer.price:
     class: Drupal\commerce_cart_api\Normalizer\PriceItemNormalizer
     tags:
       - { name: normalizer, priority: 9 }
-  serialization.commerce_cart_api.field_item:
+  commerce_cart_api.normalizer.field_item:
     class: Drupal\commerce_cart_api\Normalizer\FieldItemNormalizer
     tags:
       - { name: normalizer, priority: 8 }
-  serialization.commerce_cart_api.field:
+  commerce_cart_api.normalizer.field:
     class: Drupal\commerce_cart_api\Normalizer\FieldNormalizer
     tags:
       - { name: normalizer, priority: 9 }
-  serialization.commerce_cart_api.order_items:
+  commerce_cart_api.normalizer.order_items:
     class: Drupal\commerce_cart_api\Normalizer\OrderItemsNormalizer
     arguments: ['@entity.repository']
     tags:
