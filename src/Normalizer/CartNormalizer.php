@@ -7,6 +7,8 @@ use Drupal\serialization\Normalizer\EntityNormalizer;
 
 /**
  * Normalizes/denormalizes Drupal content entities into an array structure.
+ *
+ * @todo Review is this is needed any more, of if core EntityNormalizer is fine.
  */
 class CartNormalizer extends EntityNormalizer {
 
@@ -14,24 +16,6 @@ class CartNormalizer extends EntityNormalizer {
    * {@inheritdoc}
    */
   protected $supportedInterfaceOrClass = [OrderInterface::class];
-
-  /**
-   * Allowed fields to be returned.
-   *
-   * @todo Allow altering?
-   *
-   * @var array
-   */
-  protected $allowedFields = [
-    'order_id',
-    'uuid',
-    'order_number',
-    'store_id',
-    // Allow after https://www.drupal.org/project/commerce/issues/2916252.
-    // 'adjustments',
-    'total_price',
-    'order_items',
-  ];
 
   /**
    * {@inheritdoc}
@@ -54,10 +38,8 @@ class CartNormalizer extends EntityNormalizer {
     ];
 
     $attributes = [];
+    /** @var \Drupal\Core\Field\FieldItemListInterface $field_items */
     foreach ($entity as $name => $field_items) {
-      if (!in_array($name, $this->allowedFields)) {
-        continue;
-      }
       if ($field_items->access('view', $context['account'])) {
         $attributes[$name] = $this->serializer->normalize($field_items, $format, $context);
       }
