@@ -3,9 +3,7 @@
 namespace Drupal\commerce_cart_api\Controller;
 
 use Drupal\commerce_cart\CartProviderInterface;
-use Drupal\commerce_cart\CartSessionInterface;
 use Drupal\commerce_order\Entity\OrderInterface;
-use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\rest\ResourceResponse;
 use Symfony\Component\DependencyInjection\ContainerInterface;

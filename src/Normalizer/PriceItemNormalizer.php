@@ -2,20 +2,13 @@
 
 namespace Drupal\commerce_cart_api\Normalizer;
 
-use Drupal\commerce_order\Entity\OrderInterface;
-use Drupal\commerce_order\Entity\OrderItemInterface;
 use Drupal\commerce_price\Plugin\Field\FieldType\PriceItem;
-use Drupal\Core\Entity\Plugin\DataType\EntityAdapter;
-use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\serialization\Normalizer\FieldItemNormalizer;
 
 /**
- * Ensures normalized prices are rounded.
- *
- * @todo is this needed? JavaScripts locale format may be fine.
- * @todo should it return raw number, currency, then formatted?
+ * Adds a `formatted` value for price fields.
  */
-class PriceNormalizer extends FieldItemNormalizer {
+class PriceItemNormalizer extends FieldItemNormalizer {
 
   /**
    * {@inheritdoc}
@@ -23,34 +16,22 @@ class PriceNormalizer extends FieldItemNormalizer {
   protected $supportedInterfaceOrClass = PriceItem::class;
 
   /**
-   * @inheritDoc
-   *
-   * Prevent altering a price not from our API request.
+   * {@inheritdoc}
    */
   public function supportsNormalization($data, $format = NULL) {
     $supported = parent::supportsNormalization($data, $format);
     if ($supported) {
-      $parent = $data->getParent();
-      if ($parent instanceof FieldItemListInterface) {
-        $parent = $parent->getParent();
-        if ($parent instanceof EntityAdapter) {
-          $entity = $parent->getValue();
-          if ($entity instanceof OrderInterface || $entity instanceof OrderItemInterface) {
-            return !empty($entity->_cart_api);
-          }
-        }
-      }
+      $route = \Drupal::routeMatch()->getRouteObject();
+      return $route->hasRequirement('_cart_api');
     }
-    return FALSE;
+    return $supported;
   }
 
   /**
    * {@inheritdoc}
-   *
-   * @param \Drupal\commerce_price\Plugin\Field\FieldType\PriceItem $field_item
-   *   The price field item.
    */
   public function normalize($field_item, $format = NULL, array $context = []) {
+    /** @var \Drupal\commerce_price\Plugin\Field\FieldType\PriceItem $field_item */
     $attributes = [];
 
     /** @var \Drupal\Core\TypedData\TypedDataInterface $property */

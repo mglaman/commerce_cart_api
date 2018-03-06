@@ -16,7 +16,7 @@ class CartNormalizer extends EntityNormalizer {
   protected $supportedInterfaceOrClass = [OrderInterface::class];
 
   /**
-   * Allowed fields to be returned
+   * Allowed fields to be returned.
    *
    * @todo Allow altering?
    *
@@ -25,8 +25,6 @@ class CartNormalizer extends EntityNormalizer {
   protected $allowedFields = [
     'order_id',
     'uuid',
-    // Should we send the type?
-    // 'type',
     'order_number',
     'store_id',
     // Allow after https://www.drupal.org/project/commerce/issues/2916252.
@@ -36,17 +34,13 @@ class CartNormalizer extends EntityNormalizer {
   ];
 
   /**
-   * @inheritDoc
+   * {@inheritdoc}
    */
   public function supportsNormalization($data, $format = NULL) {
     $supported = parent::supportsNormalization($data, $format);
     if ($supported) {
-      if (!is_array($data)) {
-        $data = [$data];
-      }
-      $supported = (bool) array_filter($data, function (OrderInterface $order) {
-        return !empty($order->_cart_api);
-      });
+      $route = \Drupal::routeMatch()->getRouteObject();
+      return $route->hasRequirement('_cart_api');
     }
     return $supported;
   }

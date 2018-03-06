@@ -2,11 +2,7 @@
 
 namespace Drupal\commerce_cart_api\Normalizer;
 
-use Drupal\commerce_order\Entity\OrderInterface;
-use Drupal\commerce_order\Entity\OrderItemInterface;
-use Drupal\Core\Entity\Plugin\DataType\EntityAdapter;
 use Drupal\Core\Field\FieldItemInterface;
-use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\serialization\Normalizer\FieldItemNormalizer as CoreFieldItemNormalizer;
 
 /**
@@ -22,25 +18,15 @@ class FieldItemNormalizer extends CoreFieldItemNormalizer {
   protected $supportedInterfaceOrClass = FieldItemInterface::class;
 
   /**
-   * @inheritDoc
-   *
-   * Prevent altering a price not from our API request.
+   * {@inheritdoc}
    */
   public function supportsNormalization($data, $format = NULL) {
     $supported = parent::supportsNormalization($data, $format);
     if ($supported) {
-      $parent = $data->getParent();
-      if ($parent instanceof FieldItemListInterface) {
-        $parent = $parent->getParent();
-        if ($parent instanceof EntityAdapter) {
-          $entity = $parent->getValue();
-          if ($entity instanceof OrderInterface || $entity instanceof OrderItemInterface) {
-            return !empty($entity->_cart_api);
-          }
-        }
-      }
+      $route = \Drupal::routeMatch()->getRouteObject();
+      return $route->hasRequirement('_cart_api');
     }
-    return FALSE;
+    return $supported;
   }
 
   /**

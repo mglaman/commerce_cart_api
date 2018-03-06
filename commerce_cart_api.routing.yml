@@ -6,6 +6,7 @@ commerce_cart_api.cart_collection:
   requirements:
     _access: 'TRUE'
     _permission: 'access cart'
+    _cart_api: 'TRUE'
     _format: 'json'
   options:
     _auth: ['cookie']

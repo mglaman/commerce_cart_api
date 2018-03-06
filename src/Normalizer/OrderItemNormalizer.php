@@ -2,7 +2,6 @@
 
 namespace Drupal\commerce_cart_api\Normalizer;
 
-use Drupal\commerce_order\Entity\OrderInterface;
 use Drupal\commerce_order\Entity\OrderItemInterface;
 use Drupal\serialization\Normalizer\EntityNormalizer;
 
@@ -17,7 +16,7 @@ class OrderItemNormalizer extends EntityNormalizer {
   protected $supportedInterfaceOrClass = [OrderItemInterface::class];
 
   /**
-   * Allowed fields to be returned
+   * Allowed fields to be returned.
    *
    * @todo Allow altering?
    *
@@ -38,17 +37,13 @@ class OrderItemNormalizer extends EntityNormalizer {
   ];
 
   /**
-   * @inheritDoc
+   * {@inheritdoc}
    */
   public function supportsNormalization($data, $format = NULL) {
     $supported = parent::supportsNormalization($data, $format);
     if ($supported) {
-      if (!is_array($data)) {
-        $data = [$data];
-      }
-      $supported = (bool) array_filter($data, function (OrderItemInterface $order_item) {
-        return !empty($order_item->_cart_api);
-      });
+      $route = \Drupal::routeMatch()->getRouteObject();
+      return $route->hasRequirement('_cart_api');
     }
     return $supported;
   }
