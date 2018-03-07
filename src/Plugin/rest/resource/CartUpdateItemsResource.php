@@ -6,6 +6,7 @@ use Drupal\commerce_cart\CartManagerInterface;
 use Drupal\commerce_cart\CartProviderInterface;
 use Drupal\commerce_order\Entity\OrderInterface;
 use Drupal\commerce_order\Entity\OrderItem;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\rest\ModifiedResourceResponse;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -36,6 +37,13 @@ class CartUpdateItemsResource extends CartResourceBase {
   protected $serializer;
 
   /**
+   * The entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
    * Constructs a CartResourceBase object.
    *
    * @param array $configuration
@@ -54,10 +62,13 @@ class CartUpdateItemsResource extends CartResourceBase {
    *   The cart manager.
    * @param \Symfony\Component\Serializer\SerializerInterface $serializer
    *   The serializer.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, array $serializer_formats, LoggerInterface $logger, CartProviderInterface $cart_provider, CartManagerInterface $cart_manager, SerializerInterface $serializer) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, array $serializer_formats, LoggerInterface $logger, CartProviderInterface $cart_provider, CartManagerInterface $cart_manager, SerializerInterface $serializer, EntityTypeManagerInterface $entity_type_manager) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger, $cart_provider, $cart_manager);
     $this->serializer = $serializer;
+    $this->entityTypeManager = $entity_type_manager;
   }
 
   /**
@@ -72,7 +83,8 @@ class CartUpdateItemsResource extends CartResourceBase {
       $container->get('logger.factory')->get('rest'),
       $container->get('commerce_cart.cart_provider'),
       $container->get('commerce_cart.cart_manager'),
-      $container->get('serializer')
+      $container->get('serializer'),
+      $container->get('entity_type.manager')
     );
   }
 
@@ -90,16 +102,18 @@ class CartUpdateItemsResource extends CartResourceBase {
    *   The response.
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    */
   public function patch(OrderInterface $commerce_order, array $unserialized, Request $request) {
     $format = $request->getContentType();
+
+    $order_item_definition = $this->entityTypeManager->getDefinition('commerce_order_item');
+    $order_item_storage = $this->entityTypeManager->getStorage('commerce_order_item');
     foreach ($unserialized as $unserialized_order_item) {
       try {
-        // @todo this would bork if someone customized entity class.
-        // @todo use entity type manager to get entity class, and storage.
         /** @var \Drupal\commerce_order\Entity\OrderItemInterface $updated_order_item */
-        $updated_order_item = $this->serializer->denormalize($unserialized_order_item, OrderItem::class, $format, ['request_method' => 'patch']);
-        $original_order_item = OrderItem::load($updated_order_item->id());
+        $updated_order_item = $this->serializer->denormalize($unserialized_order_item, $order_item_definition->getClass(), $format, ['request_method' => 'patch']);
+        $original_order_item = $order_item_storage->load($updated_order_item->id());
 
         if (!$commerce_order->hasItem($original_order_item)) {
           throw new UnprocessableEntityHttpException('Invalid order item');
