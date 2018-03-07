@@ -15,7 +15,9 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
- * Provides a cart collection resource for current session.
+ * Creates order items for the session's carts.
+ *
+ * @todo Currently hardcoded to support product variations only.
  *
  * @RestResource(
  *   id = "commerce_cart_add_items",

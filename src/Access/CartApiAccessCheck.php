@@ -11,6 +11,12 @@ use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountInterface;
 use Symfony\Component\Routing\Route;
 
+/**
+ * Access check for the cart rest plugins.
+ *
+ * Uses the cart provider to check if a cart belongs to the current session,
+ * and also verifies order items belong to a valid cart.
+ */
 class CartApiAccessCheck implements AccessInterface {
 
 

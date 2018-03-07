@@ -93,15 +93,6 @@ class CartUpdateItemsResource extends CartResourceBase {
    */
   public function patch(OrderInterface $commerce_order, array $unserialized, Request $request) {
     $format = $request->getContentType();
-    // Purge read only fields.
-    // @todo We should investigate implementing field access checks on these.
-    foreach ($unserialized as $delta => $unserialized_order_item) {
-      unset($unserialized[$delta]['purchased_entity']);
-      unset($unserialized[$delta]['title']);
-      unset($unserialized[$delta]['unit_price']);
-      unset($unserialized[$delta]['total_price']);
-    }
-
     foreach ($unserialized as $unserialized_order_item) {
       try {
         // @todo this would bork if someone customized entity class.
@@ -123,7 +114,9 @@ class CartUpdateItemsResource extends CartResourceBase {
 
       foreach ($updated_order_item->_restSubmittedFields as $field_name) {
         $field = $updated_order_item->get($field_name);
-        $original_order_item->set($field_name, $field->getValue());
+        if ($field->access('edit')) {
+          $original_order_item->set($field_name, $field->getValue());
+        }
       }
 
       $original_order_item->save();
