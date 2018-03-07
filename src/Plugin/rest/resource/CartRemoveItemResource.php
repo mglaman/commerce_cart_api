@@ -25,6 +25,7 @@ class CartRemoveItemResource extends CartResourceBase {
    * The ResourceResponseSubscriber provided by rest.module gets weird when
    * going through the serialization process. The method is not cacheable and
    * it does not have a body format, causing it to be considered invalid.
+   *
    * @todo Investigate if we can return updated order as response.
    *
    * @see \Drupal\rest\EventSubscriber\ResourceResponseSubscriber::getResponseFormat

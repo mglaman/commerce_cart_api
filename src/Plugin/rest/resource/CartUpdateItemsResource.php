@@ -5,7 +5,6 @@ namespace Drupal\commerce_cart_api\Plugin\rest\resource;
 use Drupal\commerce_cart\CartManagerInterface;
 use Drupal\commerce_cart\CartProviderInterface;
 use Drupal\commerce_order\Entity\OrderInterface;
-use Drupal\commerce_order\Entity\OrderItem;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\rest\ModifiedResourceResponse;
 use Psr\Log\LoggerInterface;
