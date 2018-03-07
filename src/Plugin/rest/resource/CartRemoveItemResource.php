@@ -5,7 +5,6 @@ namespace Drupal\commerce_cart_api\Plugin\rest\resource;
 use Drupal\commerce_order\Entity\OrderInterface;
 use Drupal\commerce_order\Entity\OrderItemInterface;
 use Drupal\rest\ModifiedResourceResponse;
-use Drupal\rest\ResourceResponse;
 
 /**
  * Provides a cart collection resource for current session.
@@ -23,6 +22,13 @@ class CartRemoveItemResource extends CartResourceBase {
   /**
    * DELETE an order item from a cart.
    *
+   * @todo Investigate if we can return updated order as response.
+   * The ResourceResponseSubscriber provided by rest.module gets weird when
+   * going through the serialization process. The method is not cacheable and
+   * it does not have a body format, causing it to be considered invalid.
+   *
+   * @see \Drupal\rest\EventSubscriber\ResourceResponseSubscriber::getResponseFormat
+   *
    * @param \Drupal\commerce_order\Entity\OrderInterface $commerce_order
    *   The order.
    * @param \Drupal\commerce_order\Entity\OrderItemInterface $commerce_order_item
@@ -33,9 +39,6 @@ class CartRemoveItemResource extends CartResourceBase {
    */
   public function delete(OrderInterface $commerce_order, OrderItemInterface $commerce_order_item) {
     $this->cartManager->removeOrderItem($commerce_order, $commerce_order_item);
-
-    // DELETE responses have an empty body.
-    // @todo wanted to return the order. But the response subscriber freaks out.
     return new ModifiedResourceResponse(NULL, 204);
   }
 
