@@ -69,7 +69,6 @@ class CartApiAccessCheck implements AccessInterface {
 
     // If there is also an order item in the route, make sure it belongs
     // to this cart as well.
-    // @todo should the access check explicitly define if expecting this?
     $order_item = $route_match->getParameter('commerce_order_item');
     if ($order_item && $order_item instanceof OrderItemInterface) {
       if (!$order->hasItem($order_item)) {
@@ -78,11 +77,6 @@ class CartApiAccessCheck implements AccessInterface {
           ->addCacheableDependency($order);
       }
     }
-
-    // The access is allowed. Set a flag on the order that can be used later
-    // on throughout the request cycle.
-    // @todo This is probably wrong and belongs somewhere in route handling.
-    $order->_cart_api = TRUE;
 
     return AccessResult::allowed()->addCacheableDependency($order);
   }
