@@ -119,7 +119,7 @@ class CartUpdateItemsResource extends CartResourceBase {
 
       $order_item->setQuantity($data['quantity']);
       $violations = $order_item->validate();
-      if (!empty($violations->getEntityViolations())) {
+      if (count($violations) > 0) {
         throw new UnprocessableEntityHttpException('You have provided an invalid quantity value');
       }
 
