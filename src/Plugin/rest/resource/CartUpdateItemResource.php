@@ -14,17 +14,17 @@ use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
- * Provides a cart collection resource for current session.
+ * Resource for updating the quantity of a cart's single order item.
  *
  * @RestResource(
- *   id = "commerce_cart_update_items",
- *   label = @Translation("Cart items update"),
+ *   id = "commerce_cart_update_item",
+ *   label = @Translation("Cart item update"),
  *   uri_paths = {
- *     "canonical" = "/cart/{commerce_order}/items"
+ *     "canonical" = "/cart/{commerce_order}/items/{commerce_order_item}"
  *   }
  * )
  */
-class CartUpdateItemsResource extends CartResourceBase {
+class CartUpdateItemResource extends CartResourceBase {
 
   /**
    * The serializer.
@@ -90,6 +90,8 @@ class CartUpdateItemsResource extends CartResourceBase {
    *
    * @param \Drupal\commerce_order\Entity\OrderInterface $commerce_order
    *   The order.
+   * @param \Drupal\commerce_order\Entity\OrderItemInterface $commerce_order_item
+   *   The order item.
    * @param array $unserialized
    *   The request body.
    *
@@ -97,37 +99,16 @@ class CartUpdateItemsResource extends CartResourceBase {
    *   The response.
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    */
-  public function patch(OrderInterface $commerce_order, array $unserialized) {
-    $order_item_storage = $this->entityTypeManager->getStorage('commerce_order_item');
-
-    // Go through the request and validate the payload.
-    $order_items = [];
-    foreach ($unserialized as $order_item_id => $data) {
-      $order_item = $order_item_storage->load($order_item_id);
-
-      if (!$order_item instanceof OrderItemInterface) {
-        throw new UnprocessableEntityHttpException(sprintf('Unable to find order item %s', $order_item_id));
-      }
-      if (!$commerce_order->hasItem($order_item)) {
-        throw new UnprocessableEntityHttpException('Invalid order item');
-      }
-      if (count($data) > 1 || empty($data['quantity'])) {
-        throw new UnprocessableEntityHttpException('You only have access to update the quantity');
-      }
-
-      $order_item->setQuantity($data['quantity']);
-      $violations = $order_item->validate();
-      if (!empty($violations->getEntityViolations())) {
-        throw new UnprocessableEntityHttpException('You have provided an invalid quantity value');
-      }
-
-      $order_items[] = $order_item;
+  public function patch(OrderInterface $commerce_order, OrderItemInterface $commerce_order_item, array $unserialized) {
+    if (count($unserialized) > 1 || empty($unserialized['quantity'])) {
+      throw new UnprocessableEntityHttpException('You only have access to update the quantity');
     }
-    // We made it without errors, save the order items.
-    foreach ($order_items as $order_item) {
-      $order_item->save();
+
+    $commerce_order_item->setQuantity($unserialized['quantity']);
+    $violations = $commerce_order_item->validate();
+    if (!empty($violations->getEntityViolations())) {
+      throw new UnprocessableEntityHttpException('You have provided an invalid quantity value');
     }
 
     $commerce_order->setRefreshState(OrderInterface::REFRESH_ON_SAVE);
@@ -144,6 +125,7 @@ class CartUpdateItemsResource extends CartResourceBase {
     $route = parent::getBaseRoute($canonical_path, $method);
     $parameters = $route->getOption('parameters') ?: [];
     $parameters['commerce_order']['type'] = 'entity:commerce_order';
+    $parameters['commerce_order_item']['type'] = 'entity:commerce_order_item';
     $route->setOption('parameters', $parameters);
 
     return $route;
