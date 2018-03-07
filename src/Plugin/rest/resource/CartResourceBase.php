@@ -18,6 +18,8 @@ abstract class CartResourceBase extends ResourceBase {
   protected $cartProvider;
 
   /**
+   * The cart manager.
+   *
    * @var \Drupal\commerce_cart\CartManagerInterface
    */
   protected $cartManager;

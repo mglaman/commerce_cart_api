@@ -22,3 +22,8 @@ services:
     arguments: ['@commerce_cart.cart_provider']
     tags:
       - { name: access_check, applies_to: _cart_api }
+
+  commerce_cart_api.routing_alter_subscriber:
+    class: Drupal\commerce_cart_api\EventSubscriber\RoutingAlterSubscriber
+    tags:
+      - { name: 'event_subscriber' }
