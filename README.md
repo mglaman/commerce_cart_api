@@ -134,12 +134,12 @@ Response
 
 ## PATCH
 
-A JSON object of order item IDs and an array containing the quantity.
+A JSON object of order item IDs whose values are objects that define the item's new quantity.
 
 ```
 {
-  3: ["quantity": 1],
-  9: ["quantity": 2],
+  3: {"quantity": 1},
+  9: {"quantity": 2},
 }
 ```
 
