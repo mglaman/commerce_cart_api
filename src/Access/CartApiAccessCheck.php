@@ -52,7 +52,8 @@ class CartApiAccessCheck implements AccessInterface {
    */
   public function access(Route $route, RouteMatchInterface $route_match, AccountInterface $account) {
     // If the route has no parameters (cart collection), allow.
-    if (empty($route->getOption('parameters'))) {
+    $parameters = $route->getOption('parameters');
+    if (empty($parameters['commerce_order'])) {
       return AccessResult::allowed();
     }
 
