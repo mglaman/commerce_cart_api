@@ -39,10 +39,18 @@ class Cart extends Component {
   }
   doItemsUpdate() {
     event.preventDefault();
+
+    const payload = {};
+    this.state.cart.order_items.map(item => {
+      payload[item.order_item_id] = {
+        quantity: item.quantity
+      };
+    });
+
     superagent
       .patch(`${baseUrl}/cart/${this.state.cartId}/items?_format=json`)
       .set('Content-Type', 'application/json')
-      .send(JSON.stringify(this.state.cart.order_items))
+      .send(JSON.stringify(payload))
       .end((err, { body }) => {
         this.setState({
           cart: body,

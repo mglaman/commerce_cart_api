@@ -134,17 +134,20 @@ Response
 
 ## PATCH
 
-An array of order item data. The minimum data in order item for update
+A JSON object of order item IDs whose values are objects that define the item's new quantity.
 
-* order_item_id
-* type
+```
+{
+  3: {"quantity": 1},
+  9: {"quantity": 2},
+}
+```
 
-Currently only `quantity` is respected.
 
 ```bash
-curl 'http://localhost:32775/cart/2/items?_format=json' -X PATCH \
-    -H 'Content-Type: application/json' 
-    --data-binary '[{"order_item_id":9,"uuid":"dcaa6901-f799-4505-af4c-9d1db9a85bbb","type":"physical_product_variation","purchased_entity":4,"title":"Drupal Commerce Hoodie - Green, Small","quantity":"2.00","unit_price":{"number":"52.00","currency_code":"USD"},"total_price":{"number":"104.00","currency_code":"USD"}},{"order_item_id":21,"uuid":"3bb80d13-ec7d-4e69-af33-a2f014c5e284","type":"physical_product_variation","purchased_entity":15,"title":"Pronto600 Instant Camera","quantity":"2","unit_price":{"number":"99.99","currency_code":"USD"},"total_price":{"number":"299.97","currency_code":"USD"}}]'
+curl 'http://localhost:32775/cart/1/items?_format=json' -X PATCH \
+    -H 'Content-Type: application/json' \
+    --data-binary '{"2":{"quantity":"1"},"3":{"quantity":"1.00"}}'
 ```
 
 Response

@@ -39,7 +39,6 @@ function commerce_cart_api_entity_field_access($operation, FieldDefinitionInterf
       $allowed_fields = [
         'order_item_id',
         'uuid',
-        // We have to send type so we can PATCH.
         'type',
         'purchased_entity',
         'title',
@@ -54,24 +53,6 @@ function commerce_cart_api_entity_field_access($operation, FieldDefinitionInterf
       return AccessResult::neutral();
     }
     return AccessResult::forbiddenIf(!in_array($field_name, $allowed_fields));
-  }
-  elseif ($operation == 'edit') {
-    if ($entity_type_id == 'commerce_order_item') {
-      $ignored_fields = [
-        // Prevent chanding keys which could cause unhandled exceptions.
-        'order_item_id',
-        'uuid',
-        'type',
-        // Prevent changing the purchased entity.
-        'purchased_entity',
-        // We run refresh immediately anyways which resets these fields. Do we
-        // need to worry if someone tried to modify them?
-        'title',
-        'unit_price',
-        'total_price',
-      ];
-      return AccessResult::forbiddenIf(in_array($field_name, $ignored_fields));
-    }
   }
 
   return AccessResult::neutral();

@@ -3487,7 +3487,15 @@ var Cart = function (_Component) {
       var _this4 = this;
 
       event.preventDefault();
-      __WEBPACK_IMPORTED_MODULE_3_superagent___default.a.patch(__WEBPACK_IMPORTED_MODULE_2__utils__["a" /* baseUrl */] + '/cart/' + this.state.cartId + '/items?_format=json').set('Content-Type', 'application/json').send(JSON.stringify(this.state.cart.order_items)).end(function (err, _ref3) {
+
+      var payload = {};
+      this.state.cart.order_items.map(function (item) {
+        payload[item.order_item_id] = {
+          quantity: item.quantity
+        };
+      });
+
+      __WEBPACK_IMPORTED_MODULE_3_superagent___default.a.patch(__WEBPACK_IMPORTED_MODULE_2__utils__["a" /* baseUrl */] + '/cart/' + this.state.cartId + '/items?_format=json').set('Content-Type', 'application/json').send(JSON.stringify(payload)).end(function (err, _ref3) {
         var body = _ref3.body;
 
         _this4.setState({
