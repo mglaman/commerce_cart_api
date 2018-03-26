@@ -77,7 +77,7 @@ Example to add items to cart. Creates or carts or adds to existing.
 curl -X POST \
   'http://localhost:32775/cart/add?_format=json' \
   -H 'Content-Type: application/json' \
-  -d '[{    "purchased_entity": "6",    "quantity": "1"}]'
+  -d '[{ "purchased_entity_type": "commerce_product_variation", "purchased_entity_id": "6", "quantity": "1"}]'
 ```
 
 Response

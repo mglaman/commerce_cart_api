@@ -13,6 +13,7 @@ use Drupal\rest\ModifiedResourceResponse;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
 /**
  * Creates order items for the session's carts.
@@ -28,6 +29,13 @@ use Symfony\Component\HttpFoundation\Request;
  * )
  */
 class CartAddResource extends CartResourceBase {
+
+  /**
+   * The entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
 
   /**
    * The order item store.
@@ -78,6 +86,7 @@ class CartAddResource extends CartResourceBase {
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition, array $serializer_formats, LoggerInterface $logger, CartProviderInterface $cart_provider, CartManagerInterface $cart_manager, EntityTypeManagerInterface $entity_type_manager, ChainOrderTypeResolverInterface $chain_order_type_resolver, CurrentStoreInterface $current_store) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger, $cart_provider, $cart_manager);
+    $this->entityTypeManager = $entity_type_manager;
     $this->orderItemStorage = $entity_type_manager->getStorage('commerce_order_item');
     $this->chainOrderTypeResolver = $chain_order_type_resolver;
     $this->currentStore = $current_store;
@@ -116,12 +125,23 @@ class CartAddResource extends CartResourceBase {
    */
   public function post(array $body, Request $request) {
     $carts = [];
+
+    // Do an initial validation of the payload before any processing.
+    foreach ($body as $key => $order_item_data) {
+      if (isset($order_item_data['purchased_entity_type'])) {
+        throw new UnprocessableEntityHttpException(sprintf('You must specify a purchasable entity type for row: %s', $key));
+      }
+      if (isset($order_item_data['purchased_entity_id'])) {
+        throw new UnprocessableEntityHttpException(sprintf('You must specify a purchasable entity ID for row: %s', $key));
+      }
+      if (!$this->entityTypeManager->hasDefinition($order_item_data['purchased_entity_id'])) {
+        throw new UnprocessableEntityHttpException(sprintf('You must specify a valid purchasable entity type for row: %s', $key));
+      }
+    }
     foreach ($body as $order_item_data) {
-      // @todo How could we make this easier to support all purchasable entities
-      // Perhaps generate routes for each PurchasableEntityInterface
-      // Set the entity type as a route option, get storage. Profit.
-      $purchased_entity = ProductVariation::load($order_item_data['purchased_entity']);
-      if (!$purchased_entity) {
+      $storage = $this->entityTypeManager->getStorage($order_item_data['purchased_entity_id']);
+      $purchased_entity = $storage->load($order_item_data['purchased_entity_id']);
+      if (!$purchased_entity || !$purchased_entity instanceof PurchasableEntityInterface) {
         continue;
       }
       $order_item = $this->orderItemStorage->createFromPurchasableEntity($purchased_entity, [
@@ -135,7 +155,6 @@ class CartAddResource extends CartResourceBase {
         $cart = $this->cartProvider->createCart($order_type_id, $store);
       }
       if (!isset($carts[$cart->id()])) {
-        $cart->_cart_api = TRUE;
         $carts[$cart->id()] = $cart;
       }
       $this->cartManager->addOrderItem($cart, $order_item, TRUE);
