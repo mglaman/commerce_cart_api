@@ -6,9 +6,7 @@ use Drupal\Core\Field\FieldItemInterface;
 use Drupal\serialization\Normalizer\FieldItemNormalizer as CoreFieldItemNormalizer;
 
 /**
- * Ensures normalized prices are rounded.
- *
- * @tod is this needed? JavaScripts locale format may be fine.
+ * Field item normalizer which flattens output.
  */
 class FieldItemNormalizer extends CoreFieldItemNormalizer {
 
