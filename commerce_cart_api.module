@@ -39,7 +39,6 @@ function commerce_cart_api_entity_field_access($operation, FieldDefinitionInterf
       $allowed_fields = [
         'order_item_id',
         'uuid',
-        'type',
         'purchased_entity',
         'title',
         // Allow after https://www.drupal.org/project/commerce/issues/2916252.
