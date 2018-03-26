@@ -5,8 +5,8 @@ dependencies:
     - commerce_cart_api
     - serialization
     - user
-id: commerce_cart_add_items
-plugin_id: commerce_cart_add_items
+id: commerce_cart_add
+plugin_id: commerce_cart_add
 granularity: resource
 configuration:
   methods:

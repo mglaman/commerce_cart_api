@@ -20,14 +20,14 @@ use Symfony\Component\HttpFoundation\Request;
  * @todo Currently hardcoded to support product variations only.
  *
  * @RestResource(
- *   id = "commerce_cart_add_items",
- *   label = @Translation("Cart add items"),
+ *   id = "commerce_cart_add",
+ *   label = @Translation("Cart add"),
  *   uri_paths = {
- *     "create" = "/cart/items/add"
+ *     "create" = "/cart/add"
  *   }
  * )
  */
-class CartAddItemsResource extends CartResourceBase {
+class CartAddResource extends CartResourceBase {
 
   /**
    * The order item store.
