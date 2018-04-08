@@ -128,18 +128,18 @@ class CartAddResource extends CartResourceBase {
 
     // Do an initial validation of the payload before any processing.
     foreach ($body as $key => $order_item_data) {
-      if (isset($order_item_data['purchased_entity_type'])) {
+      if (!isset($order_item_data['purchased_entity_type'])) {
         throw new UnprocessableEntityHttpException(sprintf('You must specify a purchasable entity type for row: %s', $key));
       }
-      if (isset($order_item_data['purchased_entity_id'])) {
+      if (!isset($order_item_data['purchased_entity_id'])) {
         throw new UnprocessableEntityHttpException(sprintf('You must specify a purchasable entity ID for row: %s', $key));
       }
-      if (!$this->entityTypeManager->hasDefinition($order_item_data['purchased_entity_id'])) {
+      if (!$this->entityTypeManager->hasDefinition($order_item_data['purchased_entity_type'])) {
         throw new UnprocessableEntityHttpException(sprintf('You must specify a valid purchasable entity type for row: %s', $key));
       }
     }
     foreach ($body as $order_item_data) {
-      $storage = $this->entityTypeManager->getStorage($order_item_data['purchased_entity_id']);
+      $storage = $this->entityTypeManager->getStorage($order_item_data['purchased_entity_type']);
       $purchased_entity = $storage->load($order_item_data['purchased_entity_id']);
       if (!$purchased_entity || !$purchased_entity instanceof PurchasableEntityInterface) {
         continue;
