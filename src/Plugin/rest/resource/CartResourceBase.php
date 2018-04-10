@@ -80,7 +80,6 @@ abstract class CartResourceBase extends ResourceBase {
    */
   protected function getBaseRouteRequirements($method) {
     $requirements = parent::getBaseRouteRequirements($method);
-    $requirements['_permission'] = 'access cart';
     $requirements['_cart_api'] = 'TRUE';
     return $requirements;
   }
