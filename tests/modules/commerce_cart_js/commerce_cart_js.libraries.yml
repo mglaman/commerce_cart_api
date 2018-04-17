@@ -1,0 +1,21 @@
+cart:
+  version: VERSION
+  css:
+    layout:
+      css/commerce_cart.layout.css: {}
+    theme:
+      css/commerce_cart.theme.css: {}
+  js:
+    js/cart.js: { }
+    js/models/CartBlock.js: { }
+    js/views/CartBlockView.js: { }
+    js/views/CartContents.js: { }
+    js/views/CartContentsItemsView.js: { }
+    js/views/CartIcon.js: { }
+  dependencies:
+    - core/jquery
+    - core/jquery.once
+    - core/drupal
+    - core/drupalSettings
+    - core/backbone
+    - core/underscore

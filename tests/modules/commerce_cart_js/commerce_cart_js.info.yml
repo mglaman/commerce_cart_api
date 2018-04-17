@@ -1,0 +1,7 @@
+name: 'Commerce Cart: JS'
+description: 'Provides cart block and form replacements using Backbone.js and Underscore'
+core: 8.x
+type: module
+package: Testing
+dependencies:
+  - commerce_cart

@@ -1,0 +1,16 @@
+{
+  "name": "drupal/commerce_cart_api",
+  "type": "drupal-module",
+  "description": "WIP",
+  "keywords": ["Drupal"],
+  "license": "GPL-2.0+",
+  "homepage": "https://www.drupal.org/project/commerce_cart_api",
+  "minimum-stability": "dev",
+  "support": {
+    "issues": "https://www.drupal.org/project/issues/commerce_cart_api",
+    "source": "http://cgit.drupalcode.org/commerce_cart_api"
+  },
+  "require": {
+      "drupal/commerce": "^2.0"
+  }
+}
