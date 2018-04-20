@@ -111,7 +111,7 @@ class CartUpdateItemResource extends CartResourceBase {
       throw new UnprocessableEntityHttpException('You have provided an invalid quantity value');
     }
 
-
+    $commerce_order_item->save();
     $commerce_order->setRefreshState(OrderInterface::REFRESH_ON_SAVE);
     $commerce_order->save();
 
