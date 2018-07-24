@@ -37,6 +37,7 @@ function commerce_cart_api_entity_field_access($operation, FieldDefinitionInterf
     }
     elseif ($entity_type_id == 'commerce_order_item') {
       $allowed_fields = [
+        'order_id',
         'order_item_id',
         'uuid',
         'purchased_entity',
