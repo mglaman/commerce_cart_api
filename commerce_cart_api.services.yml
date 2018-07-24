@@ -16,6 +16,11 @@ services:
     arguments: ['@entity.repository']
     tags:
       - { name: normalizer, priority: 9 }
+  commerce_cart_api.normalizer.purchased_entity:
+    class: Drupal\commerce_cart_api\Normalizer\PurchasedEntityNormalizer
+    arguments: ['@entity.repository']
+    tags:
+      - { name: normalizer, priority: 9 }
 
   access_check.cart_api:
     class: Drupal\commerce_cart_api\Access\CartApiAccessCheck

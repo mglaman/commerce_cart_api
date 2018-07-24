@@ -49,7 +49,17 @@ function commerce_cart_api_entity_field_access($operation, FieldDefinitionInterf
       ];
     }
     else {
-      return AccessResult::neutral();
+      // Disallow access to generic entity fields for any other entity which
+      // has been normalized and being returns (like purchasable entities.)
+      $disallowed_fields = [
+        'created',
+        'changed',
+        'default_langcode',
+        'langcode',
+        'status',
+        'uid',
+      ];
+      return AccessResult::forbiddenIf(in_array($field_name, $disallowed_fields));
     }
     return AccessResult::forbiddenIf(!in_array($field_name, $allowed_fields));
   }

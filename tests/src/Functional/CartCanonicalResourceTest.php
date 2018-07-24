@@ -76,7 +76,7 @@ class CartCanonicalResourceTest extends CartResourceTestBase {
     $response_body = Json::decode((string) $response->getBody());
     $this->assertEquals(count($response_body['order_items']), 1);
     $this->assertEquals($response_body['order_items'][0]['order_item_id'], $order_item->id());
-    $this->assertEquals($response_body['order_items'][0]['purchased_entity'], $order_item->getPurchasedEntityId());
+    $this->assertEquals($response_body['order_items'][0]['purchased_entity']['variation_id'], $order_item->getPurchasedEntityId());
     $this->assertEquals($response_body['order_items'][0]['title'], $order_item->getTitle());
     $this->assertEquals($response_body['order_items'][0]['quantity'], $order_item->getQuantity());
     $this->assertEquals($response_body['order_items'][0]['unit_price']['number'], $order_item->getUnitPrice()->getNumber());

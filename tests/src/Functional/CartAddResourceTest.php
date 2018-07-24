@@ -94,7 +94,7 @@ class CartAddResourceTest extends CartResourceTestBase {
     $this->assertEquals($response_body['store_id'], $this->store->id());
     $this->assertEquals(count($response_body['order_items']), 1);
     $this->assertEquals($response_body['order_items'][0]['order_item_id'], 1);
-    $this->assertEquals($response_body['order_items'][0]['purchased_entity'], 1);
+    $this->assertEquals($response_body['order_items'][0]['purchased_entity']['variation_id'], 1);
     $this->assertEquals($response_body['order_items'][0]['quantity'], 1);
     $this->assertEquals($response_body['order_items'][0]['unit_price']['number'], 1000);
     $this->assertEquals($response_body['order_items'][0]['unit_price']['currency_code'], 'USD');
