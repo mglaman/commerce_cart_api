@@ -88,18 +88,14 @@ class CartAddResourceTest extends CartResourceTestBase {
     $this->assertResourceResponse(200, FALSE, $response);
     $response_body = Json::decode((string) $response->getBody());
     $this->assertEquals(count($response_body), 1);
-    $response_body = $response_body[0];
-    $this->assertEquals($response_body['order_id'], 1);
-    $this->assertEquals($response_body['order_number'], NULL);
-    $this->assertEquals($response_body['store_id'], $this->store->id());
-    $this->assertEquals(count($response_body['order_items']), 1);
-    $this->assertEquals($response_body['order_items'][0]['order_item_id'], 1);
-    $this->assertEquals($response_body['order_items'][0]['purchased_entity']['variation_id'], 1);
-    $this->assertEquals($response_body['order_items'][0]['quantity'], 1);
-    $this->assertEquals($response_body['order_items'][0]['unit_price']['number'], 1000);
-    $this->assertEquals($response_body['order_items'][0]['unit_price']['currency_code'], 'USD');
-    $this->assertEquals($response_body['order_items'][0]['total_price']['number'], 1000);
-    $this->assertEquals($response_body['order_items'][0]['total_price']['currency_code'], 'USD');
+    $this->assertEquals(count($response_body), 1);
+    $this->assertEquals($response_body[0]['order_item_id'], 1);
+    $this->assertEquals($response_body[0]['purchased_entity']['variation_id'], 1);
+    $this->assertEquals($response_body[0]['quantity'], 1);
+    $this->assertEquals($response_body[0]['unit_price']['number'], 1000);
+    $this->assertEquals($response_body[0]['unit_price']['currency_code'], 'USD');
+    $this->assertEquals($response_body[0]['total_price']['number'], 1000);
+    $this->assertEquals($response_body[0]['total_price']['currency_code'], 'USD');
 
     // Add two more of the same item.
     $request_options[RequestOptions::BODY] = '[{ "purchased_entity_type": "commerce_product_variation", "purchased_entity_id": "1", "quantity": "2"}]';
@@ -108,13 +104,12 @@ class CartAddResourceTest extends CartResourceTestBase {
     $this->assertResourceResponse(200, FALSE, $response);
     $response_body = Json::decode((string) $response->getBody());
     $this->assertEquals(count($response_body), 1);
-    $response_body = $response_body[0];
-    $this->assertEquals($response_body['order_items'][0]['order_item_id'], 1);
-    $this->assertEquals($response_body['order_items'][0]['quantity'], 3);
-    $this->assertEquals($response_body['order_items'][0]['unit_price']['number'], 1000);
-    $this->assertEquals($response_body['order_items'][0]['unit_price']['currency_code'], 'USD');
-    $this->assertEquals($response_body['order_items'][0]['total_price']['number'], 3000);
-    $this->assertEquals($response_body['order_items'][0]['total_price']['currency_code'], 'USD');
+    $this->assertEquals($response_body[0]['order_item_id'], 1);
+    $this->assertEquals($response_body[0]['quantity'], 3);
+    $this->assertEquals($response_body[0]['unit_price']['number'], 1000);
+    $this->assertEquals($response_body[0]['unit_price']['currency_code'], 'USD');
+    $this->assertEquals($response_body[0]['total_price']['number'], 3000);
+    $this->assertEquals($response_body[0]['total_price']['currency_code'], 'USD');
 
     // Add another item.
     $request_options[RequestOptions::BODY] = '[{ "purchased_entity_type": "commerce_product_variation", "purchased_entity_id": "2", "quantity": "5"}]';
@@ -123,13 +118,12 @@ class CartAddResourceTest extends CartResourceTestBase {
     $this->assertResourceResponse(200, FALSE, $response);
     $response_body = Json::decode((string) $response->getBody());
     $this->assertEquals(count($response_body), 1);
-    $response_body = $response_body[0];
-    $item_delta = ($response_body['order_items'][0]['order_item_id'] == 2) ? 0 : 1;
-    $this->assertEquals($response_body['order_items'][$item_delta]['quantity'], 5);
-    $this->assertEquals($response_body['order_items'][$item_delta]['unit_price']['number'], 500);
-    $this->assertEquals($response_body['order_items'][$item_delta]['unit_price']['currency_code'], 'USD');
-    $this->assertEquals($response_body['order_items'][$item_delta]['total_price']['number'], 2500);
-    $this->assertEquals($response_body['order_items'][$item_delta]['total_price']['currency_code'], 'USD');
+    $item_delta = ($response_body[0]['order_item_id'] == 2) ? 0 : 1;
+    $this->assertEquals($response_body[$item_delta]['quantity'], 5);
+    $this->assertEquals($response_body[$item_delta]['unit_price']['number'], 500);
+    $this->assertEquals($response_body[$item_delta]['unit_price']['currency_code'], 'USD');
+    $this->assertEquals($response_body[$item_delta]['total_price']['number'], 2500);
+    $this->assertEquals($response_body[$item_delta]['total_price']['currency_code'], 'USD');
   }
 
 }

@@ -124,7 +124,7 @@ class CartAddResource extends CartResourceBase {
    * @throws \Exception
    */
   public function post(array $body, Request $request) {
-    $carts = [];
+    $order_items = [];
 
     // Do an initial validation of the payload before any processing.
     foreach ($body as $key => $order_item_data) {
@@ -154,13 +154,10 @@ class CartAddResource extends CartResourceBase {
       if (!$cart) {
         $cart = $this->cartProvider->createCart($order_type_id, $store);
       }
-      if (!isset($carts[$cart->id()])) {
-        $carts[$cart->id()] = $cart;
-      }
-      $this->cartManager->addOrderItem($cart, $order_item, TRUE);
+      $order_items[] = $this->cartManager->addOrderItem($cart, $order_item, TRUE);
     }
 
-    $response = new ModifiedResourceResponse(array_values($carts), 200);
+    $response = new ModifiedResourceResponse(array_values($order_items), 200);
     return $response;
   }
 
