@@ -11,6 +11,7 @@ use Drupal\rest\ModifiedResourceResponse;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -115,6 +116,9 @@ class CartUpdateItemsResource extends CartResourceBase {
       }
       if (count($data) > 1 || empty($data['quantity'])) {
         throw new UnprocessableEntityHttpException('You only have access to update the quantity');
+      }
+      if ($data['quantity'] < 1) {
+        throw new UnprocessableEntityHttpException('Quantity must be positive value');
       }
 
       $order_item->setQuantity($data['quantity']);

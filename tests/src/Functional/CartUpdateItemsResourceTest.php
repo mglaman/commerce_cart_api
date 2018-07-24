@@ -79,11 +79,9 @@ class CartUpdateItemsResourceTest extends CartResourceTestBase {
     $response = $this->request('PATCH', $url, $request_options);
     $this->assertResourceErrorResponse(422, 'You only have access to update the quantity', $response);
 
-    /* negative quantities should not be allowed, issue #2962552
     $request_options[RequestOptions::BODY] = '{"2":{"quantity":"-1"}}';
     $response = $this->request('PATCH', $url, $request_options);
-    $this->assertResourceErrorResponse(422, 'You have provided an invalid quantity value', $response);
-     */
+    $this->assertResourceErrorResponse(422, 'Quantity must be positive value', $response);
   }
 
   /**
