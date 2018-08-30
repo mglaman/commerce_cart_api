@@ -79,7 +79,7 @@ class CartApiAccessCheck implements AccessInterface {
     $order_item = $route_match->getParameter('commerce_order_item');
     if ($order_item && $order_item instanceof OrderItemInterface) {
       if (!$order->hasItem($order_item)) {
-        return AccessResult::allowed()
+        return AccessResult::forbidden()
           ->addCacheableDependency($order_item)
           ->addCacheableDependency($order);
       }

@@ -68,12 +68,12 @@ class CartRemoveItemResourceTest extends CartResourceTestBase {
     $order_item = $items[0];
     $order_item2 = $items[1];
 
-    // Request for order item that does not exist in the cart should do nothing.
+    // Request for order item that does not exist in the cart should fail.
     $url = Url::fromUri('base:cart/' . $cart->id() . '/items/' . $not_my_order_item->id());
     $url->setOption('query', ['_format' => static::$format]);
 
     $response = $this->request('DELETE', $url, $request_options);
-    $this->assertResourceResponse(204, '', $response);
+    $this->assertResourceErrorResponse(403, '', $response);
     $this->container->get('entity_type.manager')->getStorage('commerce_order')->resetCache([$not_my_cart->id(), $cart->id()]);
     $not_my_cart = Order::load($not_my_cart->id());
     $cart = Order::load($cart->id());
