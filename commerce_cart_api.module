@@ -16,7 +16,7 @@ use Drupal\Core\Session\AccountInterface;
 function commerce_cart_api_entity_field_access($operation, FieldDefinitionInterface $field_definition, AccountInterface $account, FieldItemListInterface $items = NULL) {
   $route = \Drupal::routeMatch()->getRouteObject();
   // Only check access if this is running on our API routes.
-  if (!$route->hasRequirement('_cart_api')) {
+  if (!$route || !$route->hasRequirement('_cart_api')) {
     return AccessResult::neutral();
   }
 
