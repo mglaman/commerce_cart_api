@@ -3,6 +3,7 @@
 namespace Drupal\commerce_cart_api\Normalizer;
 
 use Drupal\Core\Field\FieldItemInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\serialization\Normalizer\FieldItemNormalizer as CoreFieldItemNormalizer;
 
 /**
@@ -16,12 +17,29 @@ class FieldItemNormalizer extends CoreFieldItemNormalizer {
   protected $supportedInterfaceOrClass = FieldItemInterface::class;
 
   /**
+   * The current route match.
+   *
+   * @var \Drupal\Core\Routing\RouteMatchInterface
+   */
+  protected $routeMatch;
+
+  /**
+   * Constructs a FieldItemNormalizer object.
+   *
+   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+   *   The current route match.
+   */
+  public function __construct(RouteMatchInterface $route_match) {
+    $this->routeMatch = $route_match;
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function supportsNormalization($data, $format = NULL) {
     $supported = parent::supportsNormalization($data, $format);
     if ($supported) {
-      $route = \Drupal::routeMatch()->getRouteObject();
+      $route = $this->routeMatch->getRouteObject();
       return $route->hasRequirement('_cart_api');
     }
     return $supported;

@@ -19,7 +19,6 @@ use Symfony\Component\Routing\Route;
  */
 class CartApiAccessCheck implements AccessInterface {
 
-
   /**
    * The cart provider.
    *
@@ -28,7 +27,7 @@ class CartApiAccessCheck implements AccessInterface {
   protected $cartProvider;
 
   /**
-   * CartCollection constructor.
+   * Constructs a new CartApiAccessCheck object.
    *
    * @param \Drupal\commerce_cart\CartProviderInterface $cart_provider
    *   The cart provider.

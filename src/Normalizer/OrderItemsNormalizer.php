@@ -2,6 +2,8 @@
 
 namespace Drupal\commerce_cart_api\Normalizer;
 
+use Drupal\Core\Entity\EntityRepositoryInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\serialization\Normalizer\EntityReferenceFieldItemNormalizer;
 
 /**
@@ -10,12 +12,34 @@ use Drupal\serialization\Normalizer\EntityReferenceFieldItemNormalizer;
 class OrderItemsNormalizer extends EntityReferenceFieldItemNormalizer {
 
   /**
+   * The current route match.
+   *
+   * @var \Drupal\Core\Routing\RouteMatchInterface
+   */
+  protected $routeMatch;
+
+  /**
+   * Constructs a OrderItemsNormalizer object.
+   *
+   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
+   *   The entity repository.
+   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+   *   The current route match.
+   */
+  public function __construct(EntityRepositoryInterface $entity_repository, RouteMatchInterface $route_match) {
+    parent::__construct($entity_repository);
+
+    $this->routeMatch = $route_match;
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function supportsNormalization($data, $format = NULL) {
     $supported = parent::supportsNormalization($data, $format);
     if ($supported) {
-      $route = \Drupal::routeMatch()->getRouteObject();
+      $route = $this->routeMatch->getRouteObject();
+      /** @var \Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem $data */
       $name = $data->getFieldDefinition()->getName();
       return $name == 'order_items' && $route->hasRequirement('_cart_api');
     }

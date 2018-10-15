@@ -3,6 +3,9 @@
 namespace Drupal\commerce_cart_api\Normalizer;
 
 use Drupal\commerce_price\Plugin\Field\FieldType\PriceItem;
+use Drupal\commerce_price\RounderInterface;
+use Drupal\Core\Render\RendererInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\serialization\Normalizer\FieldItemNormalizer;
 
 /**
@@ -16,12 +19,49 @@ class PriceItemNormalizer extends FieldItemNormalizer {
   protected $supportedInterfaceOrClass = PriceItem::class;
 
   /**
+   * The current route match.
+   *
+   * @var \Drupal\Core\Routing\RouteMatchInterface
+   */
+  protected $routeMatch;
+
+  /**
+   * The renderer.
+   *
+   * @var \Drupal\Core\Render\RendererInterface
+   */
+  protected $renderer;
+
+  /**
+   * The rounder.
+   *
+   * @var \Drupal\commerce_price\RounderInterface
+   */
+  protected $rounder;
+
+  /**
+   * Constructs a PriceItemNormalizer object.
+   *
+   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+   *   The current route match.
+   * @param \Drupal\Core\Render\RendererInterface $renderer
+   *   The renderer.
+   * @param \Drupal\commerce_price\RounderInterface $rounder
+   *   The rounder.
+   */
+  public function __construct(RouteMatchInterface $route_match, RendererInterface $renderer, RounderInterface $rounder) {
+    $this->routeMatch = $route_match;
+    $this->renderer = $renderer;
+    $this->rounder = $rounder;
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function supportsNormalization($data, $format = NULL) {
     $supported = parent::supportsNormalization($data, $format);
     if ($supported) {
-      $route = \Drupal::routeMatch()->getRouteObject();
+      $route = $this->routeMatch->getRouteObject();
       return $route->hasRequirement('_cart_api');
     }
     return $supported;
@@ -40,7 +80,7 @@ class PriceItemNormalizer extends FieldItemNormalizer {
     }
     if (!$field_item->isEmpty()) {
       $raw_value = $field_item->toPrice();
-      $rounded_value = \Drupal::getContainer()->get('commerce_price.rounder')->round($raw_value);
+      $rounded_value = $this->rounder->round($raw_value);
       $formatted_price = [
         '#type' => 'inline_template',
         '#template' => '{{ price|commerce_price_format }}',
@@ -48,7 +88,7 @@ class PriceItemNormalizer extends FieldItemNormalizer {
           'price' => $rounded_value,
         ],
       ];
-      $attributes['formatted'] = \Drupal::getContainer()->get('renderer')->renderPlain($formatted_price);
+      $attributes['formatted'] = $this->renderer->renderPlain($formatted_price);
     }
 
     return $attributes;

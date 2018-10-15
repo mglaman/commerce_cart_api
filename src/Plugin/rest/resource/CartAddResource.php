@@ -21,8 +21,6 @@ use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 /**
  * Creates order items for the session's carts.
  *
- * @todo Currently hardcoded to support product variations only.
- *
  * @RestResource(
  *   id = "commerce_cart_add",
  *   label = @Translation("Cart add"),
@@ -77,6 +75,7 @@ class CartAddResource extends CartResourceBase {
 
   /**
    * Constructs a new CartAddItemsResource object.
+   * Constructs a new CartAddResource object.
    *
    * @param array $configuration
    *   A configuration array containing information about the plugin instance.

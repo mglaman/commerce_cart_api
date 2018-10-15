@@ -8,6 +8,9 @@ use Drupal\rest\Plugin\ResourceBase;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
+/**
+ * Abstract base class for cart resoruces.
+ */
 abstract class CartResourceBase extends ResourceBase {
 
   /**

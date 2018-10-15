@@ -11,7 +11,6 @@ use Drupal\rest\ModifiedResourceResponse;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -42,7 +41,7 @@ class CartUpdateItemResource extends CartResourceBase {
   protected $entityTypeManager;
 
   /**
-   * Constructs a CartResourceBase object.
+   * Constructs a CartUpdateItemResource object.
    *
    * @param array $configuration
    *   A configuration array containing information about the plugin instance.
