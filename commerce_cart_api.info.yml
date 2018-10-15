@@ -6,5 +6,5 @@ package: 'Commerce (contrib)'
 dependencies:
   - commerce:commerce
   - commerce:commerce_cart
-  - serialization
-  - rest
+  - drupal:serialization
+  - drupal:rest
