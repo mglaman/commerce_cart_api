@@ -2,13 +2,16 @@
 
 namespace Drupal\commerce_cart_api\Plugin\rest\resource;
 
+use Drupal\commerce\Context;
 use Drupal\commerce\PurchasableEntityInterface;
 use Drupal\commerce_cart\CartManagerInterface;
 use Drupal\commerce_cart\CartProviderInterface;
 use Drupal\commerce_order\Resolver\ChainOrderTypeResolverInterface;
+use Drupal\commerce_price\Resolver\ChainPriceResolverInterface;
 use Drupal\commerce_product\Entity\ProductVariation;
 use Drupal\commerce_store\CurrentStoreInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\rest\ModifiedResourceResponse;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -59,6 +62,20 @@ class CartAddResource extends CartResourceBase {
   protected $currentStore;
 
   /**
+   * The chain base price resolver.
+   *
+   * @var \Drupal\commerce_price\Resolver\ChainPriceResolverInterface
+   */
+  protected $chainPriceResolver;
+
+  /**
+   * The current user.
+   *
+   * @var \Drupal\Core\Session\AccountInterface
+   */
+  protected $currentUser;
+
+  /**
    * Constructs a new CartAddItemsResource object.
    *
    * @param array $configuration
@@ -81,15 +98,21 @@ class CartAddResource extends CartResourceBase {
    *   The chain order type resolver.
    * @param \Drupal\commerce_store\CurrentStoreInterface $current_store
    *   The current store.
+   * @param \Drupal\commerce_price\Resolver\ChainPriceResolverInterface $chain_price_resolver
+   *   The chain base price resolver.
+   * @param \Drupal\Core\Session\AccountInterface $current_user
+   *   The current user.
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, array $serializer_formats, LoggerInterface $logger, CartProviderInterface $cart_provider, CartManagerInterface $cart_manager, EntityTypeManagerInterface $entity_type_manager, ChainOrderTypeResolverInterface $chain_order_type_resolver, CurrentStoreInterface $current_store) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, array $serializer_formats, LoggerInterface $logger, CartProviderInterface $cart_provider, CartManagerInterface $cart_manager, EntityTypeManagerInterface $entity_type_manager, ChainOrderTypeResolverInterface $chain_order_type_resolver, CurrentStoreInterface $current_store, ChainPriceResolverInterface $chain_price_resolver, AccountInterface $current_user) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger, $cart_provider, $cart_manager);
     $this->entityTypeManager = $entity_type_manager;
     $this->orderItemStorage = $entity_type_manager->getStorage('commerce_order_item');
     $this->chainOrderTypeResolver = $chain_order_type_resolver;
     $this->currentStore = $current_store;
+    $this->chainPriceResolver = $chain_price_resolver;
+    $this->currentUser = $current_user;
   }
 
   /**
@@ -106,7 +129,9 @@ class CartAddResource extends CartResourceBase {
       $container->get('commerce_cart.cart_manager'),
       $container->get('entity_type.manager'),
       $container->get('commerce_order.chain_order_type_resolver'),
-      $container->get('commerce_store.current_store')
+      $container->get('commerce_store.current_store'),
+      $container->get('commerce_price.chain_price_resolver'),
+      $container->get('current_user')
     );
   }
 
@@ -144,12 +169,14 @@ class CartAddResource extends CartResourceBase {
       if (!$purchased_entity || !$purchased_entity instanceof PurchasableEntityInterface) {
         continue;
       }
+      $store = $this->selectStore($purchased_entity);
       $order_item = $this->orderItemStorage->createFromPurchasableEntity($purchased_entity, [
         'quantity' => (!empty($order_item_data['quantity'])) ? $order_item_data['quantity'] : 1,
       ]);
+      $context = new Context($this->currentUser, $store);
+      $order_item->setUnitPrice($this->chainPriceResolver->resolve($purchased_entity, $order_item->getQuantity(), $context));
 
       $order_type_id = $this->chainOrderTypeResolver->resolve($order_item);
-      $store = $this->selectStore($purchased_entity);
       $cart = $this->cartProvider->getCart($order_type_id, $store);
       if (!$cart) {
         $cart = $this->cartProvider->createCart($order_type_id, $store);
