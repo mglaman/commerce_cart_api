@@ -1,3 +1,5 @@
+parameters:
+  commerce_cart_api.token_cart_session: false
 services:
   commerce_cart_api.normalizer.price:
     class: Drupal\commerce_cart_api\Normalizer\PriceItemNormalizer

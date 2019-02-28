@@ -35,6 +35,7 @@ class CartCollectionResource extends CartResourceBase {
       'store',
       'cart',
     ]);
+
     return $response;
   }
 
