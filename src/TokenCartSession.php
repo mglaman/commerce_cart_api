@@ -9,23 +9,31 @@ use Symfony\Component\HttpFoundation\RequestStack;
 
 final class TokenCartSession implements CartSessionInterface {
 
-  const HEADER_NAME = 'X-Cart-Token';
+  const HEADER_NAME = 'Commerce-Cart-Token';
+
+  /**
+   * The inner cart session service.
+   *
+   * @var \Drupal\commerce_cart\CartSessionInterface
+   */
+  private $inner;
 
   /**
    * Request stack service.
    *
    * @var \Symfony\Component\HttpFoundation\RequestStack
    */
-  protected $requestStack;
+  private $requestStack;
 
   /**
    * The tempstore service.
    *
    * @var \Drupal\Core\TempStore\PrivateTempStoreFactory
    */
-  protected $tempStore;
+  private $tempStore;
 
-  public function __construct(RequestStack $request_stack, PrivateTempStoreFactory $temp_store_factory) {
+  public function __construct(CartSessionInterface $inner, RequestStack $request_stack, PrivateTempStoreFactory $temp_store_factory) {
+    $this->inner = $inner;
     $this->requestStack = $request_stack;
     $this->tempStore = $temp_store_factory->get('commerce_cart_api_tokens');
   }
@@ -34,6 +42,9 @@ final class TokenCartSession implements CartSessionInterface {
    * {@inheritdoc}
    */
   public function getCartIds($type = self::ACTIVE) {
+    if ($this->getCurrentRequestCartToken() === NULL) {
+      return $this->inner->getCartIds($type);
+    }
     $data = $this->getTokenCartData();
     return $data[$type];
   }
@@ -42,17 +53,24 @@ final class TokenCartSession implements CartSessionInterface {
    * {@inheritdoc}
    */
   public function addCartId($cart_id, $type = self::ACTIVE) {
-    $data = $this->getTokenCartData();
-    $ids = $data[$type];
-    $ids[] = $cart_id;
-    $data[$type] = $ids;
-    $this->setTokenCartData($data);
+    $this->inner->addCartId($cart_id, $type);
+
+    if ($this->getCurrentRequestCartToken() !== NULL) {
+      $data = $this->getTokenCartData();
+      $ids = $data[$type];
+      $ids[] = $cart_id;
+      $data[$type] = $ids;
+      $this->setTokenCartData($data);
+    }
   }
 
   /**
    * {@inheritdoc}
    */
   public function hasCartId($cart_id, $type = self::ACTIVE) {
+    if ($this->getCurrentRequestCartToken() === NULL) {
+      return $this->inner->hasCartId($cart_id, $type);
+    }
     $data = $this->getTokenCartData();
     $ids = $data[$type];
     return in_array($cart_id, $ids, TRUE);
@@ -62,11 +80,26 @@ final class TokenCartSession implements CartSessionInterface {
    * {@inheritdoc}
    */
   public function deleteCartId($cart_id, $type = self::ACTIVE) {
-    $data = $this->getTokenCartData();
-    $ids = $data[$type];
-    $ids = array_diff($ids, [$cart_id]);
-    $data[$type] = $ids;
-    $this->setTokenCartData($data);
+    $this->inner->deleteCartId($cart_id, $type);
+
+    if ($this->getCurrentRequestCartToken() !== NULL) {
+      $data = $this->getTokenCartData();
+      $ids = $data[$type];
+      $ids = array_diff($ids, [$cart_id]);
+      $data[$type] = $ids;
+      $this->setTokenCartData($data);
+    }
+  }
+
+  /**
+   * Get the cart token from the request.
+   *
+   * @return string
+   */
+  private function getCurrentRequestCartToken() {
+    $request = $this->requestStack->getCurrentRequest();
+    assert($request instanceof Request);
+    return $request->headers->get(static::HEADER_NAME);
   }
 
   /**
@@ -80,19 +113,21 @@ final class TokenCartSession implements CartSessionInterface {
       static::ACTIVE => [],
       static::COMPLETED => [],
     ];
-    $request = $this->requestStack->getCurrentRequest();
-    assert($request instanceof Request);
-    $token = $request->headers->get(static::HEADER_NAME);
+    $token = $this->getCurrentRequestCartToken();
     if (empty($token)) {
       return $defaults;
     }
     return $this->tempStore->get($token) ?: $defaults;
   }
 
+  /**
+   * Set the token cart data.
+   *
+   * @param array $data
+   *   The data.
+   */
   private function setTokenCartData(array $data) {
-    $request = $this->requestStack->getCurrentRequest();
-    assert($request instanceof Request);
-    $token = $request->headers->get(static::HEADER_NAME);
+    $token = $this->getCurrentRequestCartToken();
     if (!empty($token)) {
       $this->tempStore->set($token, $data);
     }

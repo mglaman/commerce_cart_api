@@ -10,12 +10,18 @@ class CommerceCartApiServiceProvider extends ServiceProviderBase {
 
   /**
    * {@inheritdoc}
+   *
+   * The ::register method runs before the site's service_yamls have been
+   * registered. That means the parameter will always be false. We register the
+   * decorated service here so that it respects the customized parameter.
    */
   public function alter(ContainerBuilder $container) {
-    if ($container->hasDefinition('commerce_cart.cart_session') && $container->getParameter('commerce_cart_api.token_cart_session')) {
-      $container->getDefinition('commerce_cart.cart_session')
-        ->setClass(TokenCartSession::class)
-        ->setArguments([new Reference('request_stack'), new Reference('tempstore.private')]);
+    $parameter = $container->getParameter('commerce_cart_api');
+    if ($parameter['use_token_cart_session']) {
+      $container->register('commerce_cart_api.token_cart_session', TokenCartSession::class)
+        ->setDecoratedService('commerce_cart.cart_session')
+        ->setPublic(FALSE)
+        ->setArguments([new Reference('commerce_cart_api.token_cart_session.inner'), new Reference('request_stack'), new Reference('tempstore.private')]);
     }
   }
 
