@@ -3,6 +3,7 @@
 namespace  Drupal\commerce_cart_api\EventSubscriber;
 
 use Drupal\commerce_cart\CartSessionInterface;
+use Drupal\commerce_cart_api\CartTokenSession;
 use Drupal\Core\TempStore\SharedTempStoreFactory;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\GetResponseEvent;
@@ -43,7 +44,7 @@ final class CartTokenClaimSubscriber implements EventSubscriberInterface {
    *   The response event, which contains the current request.
    */
   public function onRequest(GetResponseEvent $event) {
-    $cart_token = $event->getRequest()->query->get('cartToken');
+    $cart_token = $event->getRequest()->query->get(CartTokenSession::QUERY_NAME);
     if ($cart_token) {
       $token_cart_data = $this->tempStore->get($cart_token);
       foreach ([CartSessionInterface::ACTIVE, CartSessionInterface::COMPLETED] as $cart_type) {

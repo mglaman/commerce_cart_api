@@ -3,7 +3,7 @@
 namespace Drupal\commerce_cart_api;
 
 use Drupal\commerce_cart_api\EventSubscriber\CartTokenClaimSubscriber;
-use Drupal\commerce_cart_api\PageCache\DenyCartCollection;
+use Drupal\commerce_cart_api\Session\CartTokenSessionConfiguration;
 use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\Core\DependencyInjection\ServiceProviderBase;
 use Symfony\Component\DependencyInjection\Reference;
@@ -19,16 +19,16 @@ class CommerceCartApiServiceProvider extends ServiceProviderBase {
    */
   public function alter(ContainerBuilder $container) {
     $parameter = $container->getParameter('commerce_cart_api');
-    if ($parameter['use_token_cart_session']) {
-      $container->register('commerce_cart_api.token_cart_session', TokenCartSession::class)
+    if ($parameter['use_cart_token_session']) {
+      $container->register('commerce_cart_api.cart_token_session', CartTokenSession::class)
         ->setDecoratedService('commerce_cart.cart_session')
         ->setPublic(FALSE)
-        ->setArguments([new Reference('commerce_cart_api.token_cart_session.inner'), new Reference('request_stack'), new Reference('tempstore.shared')]);
+        ->setArguments([new Reference('commerce_cart_api.cart_token_session.inner'), new Reference('request_stack'), new Reference('tempstore.shared')]);
 
-      $container->register('commerce_cart_api.page_cache_response_policy.deny_cart_collection', DenyCartCollection::class)
-        ->setArguments([new Reference('current_route_match')])
+      $container->register('commerce_cart_api.cart_token_session_configuration', CartTokenSessionConfiguration::class)
+        ->setDecoratedService('session_configuration')
         ->setPublic(FALSE)
-        ->addTag('page_cache_response_policy');
+        ->setArguments([new Reference('commerce_cart_api.cart_token_session_configuration.inner')]);
 
       $container->register('commerce_cart_api.token_cart_convert_subscriber', CartTokenClaimSubscriber::class)
         ->setArguments([new Reference('commerce_cart.cart_session'), new Reference('tempstore.shared')])

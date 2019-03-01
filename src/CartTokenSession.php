@@ -7,9 +7,10 @@ use Drupal\Core\TempStore\SharedTempStoreFactory;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 
-final class TokenCartSession implements CartSessionInterface {
+final class CartTokenSession implements CartSessionInterface {
 
   const HEADER_NAME = 'Commerce-Cart-Token';
+  const QUERY_NAME = 'cartToken';
 
   /**
    * The inner cart session service.
