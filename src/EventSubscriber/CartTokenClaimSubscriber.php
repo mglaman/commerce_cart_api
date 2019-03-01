@@ -31,10 +31,10 @@ final class CartTokenClaimSubscriber implements EventSubscriberInterface {
   }
 
   public static function getSubscribedEvents() {
-    return [
-      // Run before dynamic_page_cache so we can populate a session.
-      $events[KernelEvents::REQUEST][] = ['onRequest', 28]
-    ];
+    $events = [];
+    // Run before dynamic_page_cache so we can populate a session.
+    $events[KernelEvents::REQUEST][] = ['onRequest', 28];
+    return $events;
   }
 
   /**
