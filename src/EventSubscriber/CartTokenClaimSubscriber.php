@@ -32,8 +32,10 @@ final class CartTokenClaimSubscriber implements EventSubscriberInterface {
 
   public static function getSubscribedEvents() {
     $events = [];
-    // Run before dynamic_page_cache so we can populate a session.
-    $events[KernelEvents::REQUEST][] = ['onRequest', 28];
+    // Run before router_listener so we execute before access checks, and before
+    // dynamic_page_cache so we can populate a session. The ensures proper
+    // access to CheckoutController.
+    $events[KernelEvents::REQUEST][] = ['onRequest', 100];
     return $events;
   }
 
