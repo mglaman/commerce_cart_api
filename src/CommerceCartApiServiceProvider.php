@@ -2,6 +2,7 @@
 
 namespace Drupal\commerce_cart_api;
 
+use Drupal\commerce_cart_api\EventSubscriber\CartTokenClaimSubscriber;
 use Drupal\commerce_cart_api\PageCache\DenyCartCollection;
 use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\Core\DependencyInjection\ServiceProviderBase;
@@ -28,6 +29,10 @@ class CommerceCartApiServiceProvider extends ServiceProviderBase {
         ->setArguments([new Reference('current_route_match')])
         ->setPublic(FALSE)
         ->addTag('page_cache_response_policy');
+
+      $container->register('commerce_cart_api.token_cart_convert_subscriber', CartTokenClaimSubscriber::class)
+        ->setArguments([new Reference('commerce_cart.cart_session'), new Reference('tempstore.shared')])
+        ->addTag('event_subscriber');
     }
   }
 
