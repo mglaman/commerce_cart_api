@@ -2,6 +2,7 @@
 
 namespace Drupal\commerce_cart_api;
 
+use Drupal\commerce_cart_api\PageCache\DenyCartCollection;
 use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\Core\DependencyInjection\ServiceProviderBase;
 use Symfony\Component\DependencyInjection\Reference;
@@ -22,6 +23,11 @@ class CommerceCartApiServiceProvider extends ServiceProviderBase {
         ->setDecoratedService('commerce_cart.cart_session')
         ->setPublic(FALSE)
         ->setArguments([new Reference('commerce_cart_api.token_cart_session.inner'), new Reference('request_stack'), new Reference('tempstore.shared')]);
+
+      $container->register('commerce_cart_api.page_cache_response_policy.deny_cart_collection', DenyCartCollection::class)
+        ->setArguments([new Reference('current_route_match')])
+        ->setPublic(FALSE)
+        ->addTag('page_cache_response_policy');
     }
   }
 
