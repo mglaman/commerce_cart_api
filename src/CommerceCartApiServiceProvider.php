@@ -21,7 +21,7 @@ class CommerceCartApiServiceProvider extends ServiceProviderBase {
       $container->register('commerce_cart_api.token_cart_session', TokenCartSession::class)
         ->setDecoratedService('commerce_cart.cart_session')
         ->setPublic(FALSE)
-        ->setArguments([new Reference('commerce_cart_api.token_cart_session.inner'), new Reference('request_stack'), new Reference('tempstore.private')]);
+        ->setArguments([new Reference('commerce_cart_api.token_cart_session.inner'), new Reference('request_stack'), new Reference('tempstore.shared')]);
     }
   }
 

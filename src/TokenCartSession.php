@@ -3,7 +3,7 @@
 namespace Drupal\commerce_cart_api;
 
 use Drupal\commerce_cart\CartSessionInterface;
-use Drupal\Core\TempStore\PrivateTempStoreFactory;
+use Drupal\Core\TempStore\SharedTempStoreFactory;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 
@@ -28,11 +28,11 @@ final class TokenCartSession implements CartSessionInterface {
   /**
    * The tempstore service.
    *
-   * @var \Drupal\Core\TempStore\PrivateTempStoreFactory
+   * @var \Drupal\Core\TempStore\SharedTempStoreFactory
    */
   private $tempStore;
 
-  public function __construct(CartSessionInterface $inner, RequestStack $request_stack, PrivateTempStoreFactory $temp_store_factory) {
+  public function __construct(CartSessionInterface $inner, RequestStack $request_stack, SharedTempStoreFactory $temp_store_factory) {
     $this->inner = $inner;
     $this->requestStack = $request_stack;
     $this->tempStore = $temp_store_factory->get('commerce_cart_api_tokens');
@@ -132,6 +132,5 @@ final class TokenCartSession implements CartSessionInterface {
       $this->tempStore->set($token, $data);
     }
   }
-
 
 }
