@@ -19,7 +19,7 @@ class FieldNormalizer extends CoreFieldNormalizer {
   protected $routeMatch;
 
   /**
-   * Constructs a FieldNormalizer object.
+   * Constructs a new FieldNormalizer object.
    *
    * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
    *   The current route match.

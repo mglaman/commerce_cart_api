@@ -19,7 +19,7 @@ class OrderItemsNormalizer extends EntityReferenceFieldItemNormalizer {
   protected $routeMatch;
 
   /**
-   * Constructs a OrderItemsNormalizer object.
+   * Constructs a new OrderItemsNormalizer object.
    *
    * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
    *   The entity repository.

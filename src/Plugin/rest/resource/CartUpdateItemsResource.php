@@ -41,7 +41,7 @@ class CartUpdateItemsResource extends CartResourceBase {
   protected $entityTypeManager;
 
   /**
-   * Constructs a CartUpdateItemsResource object.
+   * Constructs a new CartUpdateItemsResource object.
    *
    * @param array $configuration
    *   A configuration array containing information about the plugin instance.

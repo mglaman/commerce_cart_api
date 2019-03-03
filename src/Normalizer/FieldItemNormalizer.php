@@ -24,7 +24,7 @@ class FieldItemNormalizer extends CoreFieldItemNormalizer {
   protected $routeMatch;
 
   /**
-   * Constructs a FieldItemNormalizer object.
+   * Constructs a new FieldItemNormalizer object.
    *
    * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
    *   The current route match.
