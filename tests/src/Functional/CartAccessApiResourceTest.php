@@ -87,7 +87,7 @@ class CartAccessApiResourceTest extends CartResourceTestBase {
     $url->setOption('query', ['_format' => static::$format]);
 
     $response = $this->request('GET', $url, $request_options);
-    $this->assertResourceErrorResponse(403, '', $response);
+    $this->assertResourceErrorResponse(403, "", $response, ['4xx-response', 'commerce_order:1', 'http_response'], [''], FALSE);
 
     // Create non-cart order.
     $order = $this->createEntity('commerce_order', [
@@ -103,7 +103,7 @@ class CartAccessApiResourceTest extends CartResourceTestBase {
     $url->setOption('query', ['_format' => static::$format]);
 
     $response = $this->request('GET', $url, $request_options);
-    $this->assertResourceErrorResponse(403, '', $response);
+    $this->assertResourceErrorResponse(403, "", $response, ['4xx-response', 'commerce_order:1', 'http_response'], [''], FALSE);
   }
 
   /**
@@ -119,7 +119,7 @@ class CartAccessApiResourceTest extends CartResourceTestBase {
     $url->setOption('query', ['_format' => static::$format]);
 
     $response = $this->request('GET', $url, $request_options);
-    $this->assertResourceErrorResponse(403, '', $response);
+    $this->assertResourceErrorResponse(403, "", $response, ['4xx-response', 'commerce_order:1', 'http_response'], [''], FALSE);
   }
 
   /**
