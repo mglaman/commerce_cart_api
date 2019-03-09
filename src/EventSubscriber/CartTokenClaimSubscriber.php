@@ -6,6 +6,7 @@ use Drupal\commerce_cart\CartSessionInterface;
 use Drupal\commerce_cart_api\CartTokenSession;
 use Drupal\Core\TempStore\SharedTempStoreFactory;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\HttpKernel\Event\FilterResponseEvent;
 use Symfony\Component\HttpKernel\Event\GetResponseEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 
@@ -36,6 +37,8 @@ final class CartTokenClaimSubscriber implements EventSubscriberInterface {
     // dynamic_page_cache so we can populate a session. The ensures proper
     // access to CheckoutController.
     $events[KernelEvents::REQUEST][] = ['onRequest', 100];
+
+    $events[KernelEvents::RESPONSE][] = ['onResponse'];
     return $events;
   }
 
@@ -57,5 +60,23 @@ final class CartTokenClaimSubscriber implements EventSubscriberInterface {
         }
       }
     }
+  }
+
+  /**
+   * Ensures the Vary header contains the cart token header name.
+   *
+   * @param \Symfony\Component\HttpKernel\Event\FilterResponseEvent $event
+   *   The response event.
+   */
+  public function onResponse(FilterResponseEvent $event) {
+    if (!$event->isMasterRequest()) {
+      return;
+    }
+    $request = $event->getRequest();
+    if ($request->headers->has(CartTokenSession::HEADER_NAME)) {
+      $response = $event->getResponse();
+      $response->setVary(CartTokenSession::HEADER_NAME, FALSE);
+    }
+
   }
 }
