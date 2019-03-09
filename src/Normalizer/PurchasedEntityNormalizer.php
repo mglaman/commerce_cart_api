@@ -19,7 +19,7 @@ class PurchasedEntityNormalizer extends EntityReferenceFieldItemNormalizer {
   protected $routeMatch;
 
   /**
-   * Constructs a PurchasedEntityNormalizer object.
+   * Constructs a new PurchasedEntityNormalizer object.
    *
    * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
    *   The entity repository.

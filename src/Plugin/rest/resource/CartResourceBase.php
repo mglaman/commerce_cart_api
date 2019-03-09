@@ -28,7 +28,7 @@ abstract class CartResourceBase extends ResourceBase {
   protected $cartManager;
 
   /**
-   * Constructs a CartResourceBase object.
+   * Constructs a new CartResourceBase object.
    *
    * @param array $configuration
    *   A configuration array containing information about the plugin instance.

@@ -74,7 +74,6 @@ class CartAddResource extends CartResourceBase {
   protected $currentUser;
 
   /**
-   * Constructs a new CartAddItemsResource object.
    * Constructs a new CartAddResource object.
    *
    * @param array $configuration

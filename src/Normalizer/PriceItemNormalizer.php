@@ -40,7 +40,7 @@ class PriceItemNormalizer extends FieldItemNormalizer {
   protected $rounder;
 
   /**
-   * Constructs a PriceItemNormalizer object.
+   * Constructs a new PriceItemNormalizer object.
    *
    * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
    *   The current route match.

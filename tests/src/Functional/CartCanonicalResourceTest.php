@@ -32,14 +32,15 @@ class CartCanonicalResourceTest extends CartResourceTestBase {
   public function testNoCartAvailable() {
     $request_options = $this->getAuthenticationRequestOptions('GET');
 
-    $cart = \Drupal::service('commerce_cart.cart_provider')->createCart('default', $this->store);
+    $cart = $this->container->get('commerce_cart.cart_provider')->createCart('default', $this->store, $this->createUser());
     $this->assertInstanceOf(OrderInterface::class, $cart);
 
     $url = Url::fromUri('base:cart/' . $cart->id());
     $url->setOption('query', ['_format' => static::$format]);
 
     $response = $this->request('GET', $url, $request_options);
-    $this->assertResourceErrorResponse(403, '', $response);
+    $this->assertSame(403, $response->getStatusCode());
+    $this->assertResourceErrorResponse(403, "", $response, ['4xx-response', 'commerce_order:1', 'http_response'], [''], FALSE);
   }
 
   /**
@@ -49,7 +50,7 @@ class CartCanonicalResourceTest extends CartResourceTestBase {
     $request_options = $this->getAuthenticationRequestOptions('GET');
 
     // Add a cart that does belong to the account.
-    $cart = \Drupal::service('commerce_cart.cart_provider')->createCart('default', $this->store, $this->account);
+    $cart = $this->container->get('commerce_cart.cart_provider')->createCart('default', $this->store, $this->account);
     $this->assertInstanceOf(OrderInterface::class, $cart);
 
     $url = Url::fromUri('base:cart/' . $cart->id());
