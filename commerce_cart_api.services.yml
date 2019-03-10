@@ -1,3 +1,6 @@
+parameters:
+  commerce_cart_api:
+    use_cart_token_session: false
 services:
   commerce_cart_api.normalizer.price:
     class: Drupal\commerce_cart_api\Normalizer\PriceItemNormalizer
@@ -39,3 +42,5 @@ services:
     class: Drupal\commerce_cart_api\EventSubscriber\RoutingAlterSubscriber
     tags:
       - { name: 'event_subscriber' }
+
+
