@@ -43,4 +43,6 @@ services:
     tags:
       - { name: 'event_subscriber' }
 
-
+  commerce_cart_api.field_access:
+    class: Drupal\commerce_cart_api\FieldAccess
+    arguments: ['@current_route_match']

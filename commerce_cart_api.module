@@ -5,7 +5,6 @@
  * Provides hooks.
  */
 
-use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Session\AccountInterface;
@@ -14,56 +13,6 @@ use Drupal\Core\Session\AccountInterface;
  * Implements hook_entity_field_access().
  */
 function commerce_cart_api_entity_field_access($operation, FieldDefinitionInterface $field_definition, AccountInterface $account, FieldItemListInterface $items = NULL) {
-  $route = \Drupal::routeMatch()->getRouteObject();
-  // Only check access if this is running on our API routes.
-  if (!$route || !$route->hasRequirement('_cart_api')) {
-    return AccessResult::neutral();
-  }
-
-  $entity_type_id = $field_definition->getTargetEntityTypeId();
-  $field_name = $field_definition->getName();
-  if ($operation == 'view') {
-    if ($entity_type_id == 'commerce_order') {
-      $allowed_fields = [
-        'order_id',
-        'uuid',
-        'order_number',
-        'store_id',
-        // Allow after https://www.drupal.org/project/commerce/issues/2916252.
-        // 'adjustments',
-        'total_price',
-        'order_items',
-      ];
-    }
-    elseif ($entity_type_id == 'commerce_order_item') {
-      $allowed_fields = [
-        'order_id',
-        'order_item_id',
-        'uuid',
-        'purchased_entity',
-        'title',
-        // Allow after https://www.drupal.org/project/commerce/issues/2916252.
-        // 'adjustments',
-        'quantity',
-        'unit_price',
-        'total_price',
-      ];
-    }
-    else {
-      // Disallow access to generic entity fields for any other entity which
-      // has been normalized and being returns (like purchasable entities.)
-      $disallowed_fields = [
-        'created',
-        'changed',
-        'default_langcode',
-        'langcode',
-        'status',
-        'uid',
-      ];
-      return AccessResult::forbiddenIf(in_array($field_name, $disallowed_fields));
-    }
-    return AccessResult::forbiddenIf(!in_array($field_name, $allowed_fields));
-  }
-
-  return AccessResult::neutral();
+  $field_access = \Drupal::getContainer()->get('commerce_cart_api.field_access');
+  return $field_access->handle($operation, $field_definition, $account, $items);
 }
