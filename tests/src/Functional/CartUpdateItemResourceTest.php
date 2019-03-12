@@ -167,6 +167,7 @@ class CartUpdateItemResourceTest extends CartResourceTestBase {
     $this->assertEquals($response_body['store_id'], $cart->getStoreId());
     $this->assertEquals($response_body['total_price']['number'], $cart->getTotalPrice()->getNumber());
     $this->assertEquals($response_body['total_price']['currency_code'], $cart->getTotalPrice()->getCurrencyCode());
+    $this->assertEquals($response_body['total_price']['formatted'], '$2,500.00');
     $this->assertEquals(count($response_body['order_items']), 2);
 
     // First order item.
@@ -176,6 +177,7 @@ class CartUpdateItemResourceTest extends CartResourceTestBase {
     $this->assertEquals($response_body['order_items'][$item_delta]['quantity'], $order_item->getQuantity());
     $this->assertEquals($response_body['order_items'][$item_delta]['total_price']['number'], $order_item->getTotalPrice()->getNumber());
     $this->assertEquals($response_body['order_items'][$item_delta]['total_price']['currency_code'], $order_item->getTotalPrice()->getCurrencyCode());
+    $this->assertEquals($response_body['order_items'][$item_delta]['total_price']['formatted'], '$2,000.00');
 
     // Second order item.
     $item_delta = ($response_body['order_items'][0]['order_item_id'] == $order_item_2->id()) ? 0 : 1;
@@ -184,6 +186,7 @@ class CartUpdateItemResourceTest extends CartResourceTestBase {
     $this->assertEquals($response_body['order_items'][$item_delta]['quantity'], $order_item_2->getQuantity());
     $this->assertEquals($response_body['order_items'][$item_delta]['total_price']['number'], $order_item_2->getTotalPrice()->getNumber());
     $this->assertEquals($response_body['order_items'][$item_delta]['total_price']['currency_code'], $order_item_2->getTotalPrice()->getCurrencyCode());
+    $this->assertEquals($response_body['order_items'][$item_delta]['total_price']['formatted'], '$500.00');
   }
 
 }

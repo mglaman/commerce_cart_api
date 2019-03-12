@@ -82,8 +82,10 @@ class CartCanonicalResourceTest extends CartResourceTestBase {
     $this->assertEquals($response_body['order_items'][0]['quantity'], $order_item->getQuantity());
     $this->assertEquals($response_body['order_items'][0]['unit_price']['number'], $order_item->getUnitPrice()->getNumber());
     $this->assertEquals($response_body['order_items'][0]['unit_price']['currency_code'], $order_item->getUnitPrice()->getCurrencyCode());
+    $this->assertEquals($response_body['order_items'][0]['unit_price']['formatted'], '$1,000.00');
     $this->assertEquals($response_body['order_items'][0]['total_price']['number'], $order_item->getTotalPrice()->getNumber());
     $this->assertEquals($response_body['order_items'][0]['total_price']['currency_code'], $order_item->getTotalPrice()->getCurrencyCode());
+    $this->assertEquals($response_body['order_items'][0]['total_price']['formatted'], '$2,000.00');
   }
 
 }

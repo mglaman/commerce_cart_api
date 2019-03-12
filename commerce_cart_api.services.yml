@@ -2,11 +2,6 @@ parameters:
   commerce_cart_api:
     use_cart_token_session: false
 services:
-  commerce_cart_api.normalizer.price:
-    class: Drupal\commerce_cart_api\Normalizer\PriceItemNormalizer
-    arguments: ['@current_route_match', '@renderer', '@commerce_price.rounder']
-    tags:
-      - { name: normalizer, priority: 9 }
 
   commerce_cart_api.normalizer.field_item:
     class: Drupal\commerce_cart_api\Normalizer\FieldItemNormalizer
