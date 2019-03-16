@@ -10,6 +10,7 @@ use Drupal\commerce_order\Entity\OrderInterface;
 use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
+use Drupal\Core\Render\RenderContext;
 use Drupal\Core\Url;
 use Drupal\jsonapi\Exception\UnprocessableHttpEntityException;
 use Drupal\jsonapi\IncludeResolver;
@@ -93,6 +94,10 @@ class CartResourceController implements ContainerInjectionInterface {
 
   private $orderItemStorage;
 
+  private $entityRepository;
+
+  private $currentUser;
+
   /**
    * Constructs a new CartResourceController object.
    *
@@ -120,6 +125,8 @@ class CartResourceController implements ContainerInjectionInterface {
     $this->chainOrderTypeResolver = \Drupal::getContainer()->get('commerce_order.chain_order_type_resolver');
     $this->currentStore = \Drupal::getContainer()->get('commerce_store.current_store');
     $this->chainPriceResolver = \Drupal::getContainer()->get('commerce_price.chain_price_resolver');
+    $this->entityRepository = \Drupal::getContainer()->get('entity.repository');
+    $this->currentUser = \Drupal::currentUser();
   }
 
   /**
@@ -149,6 +156,7 @@ class CartResourceController implements ContainerInjectionInterface {
    *
    */
   public function getCarts(Request $request) {
+    // @todo removing fixInclude here breaks the response...
     $this->fixInclude($request);
     $carts = $this->cartProvider->getCarts();
     $grouped_by_resource_type = array_reduce($carts, function ($grouped, OrderInterface $cart) {
@@ -187,19 +195,28 @@ class CartResourceController implements ContainerInjectionInterface {
     $this->fixInclude($request);
     $resource_type = $this->resourceTypeRepository->get($cart->getEntityTypeId(), $cart->bundle());
     $resource_object = new ResourceObject($resource_type, $cart);
-    $self_link = new Link(new CacheableMetadata(), Url::fromRoute('commerce_checkout.form', ['commerce_order' => $cart->id()]), ['checkout']);
-    $links = new LinkCollection([$self_link]);
+    // @todo generating this causes 500.
+    // $self_link = new Link(new CacheableMetadata(), Url::fromRoute('commerce_checkout.form', ['commerce_order' => $cart->id()]), ['checkout']);
+    $links = new LinkCollection([]);
     $response = $this->buildWrappedResponse($resource_object, $request, $this->getIncludes($request, $resource_object), 200, [], $links);
     return $response;
   }
 
+  /**
+   * Clear a cart's items.
+   *
+   * @param \Drupal\commerce_order\Entity\OrderInterface $cart
+   *   The cart.
+   *
+   * @return \Drupal\jsonapi\ResourceResponse
+   *   The response.
+   */
   public function clearItems(OrderInterface $cart) {
     $this->cartManager->emptyCart($cart);
     return new ResourceResponse(NULL, 204);
   }
 
   public function addItems(Request $request) {
-    $order_items = [];
     try {
       $received = (string) $request->getContent();
       $document = $this->serializer->decode($received, 'api_json');
@@ -225,34 +242,42 @@ class CartResourceController implements ContainerInjectionInterface {
         throw new UnprocessableEntityHttpException(sprintf('You must specify a valid purchasable entity type for row: %s', $key));
       }
     }
-    foreach ($document['data'] as $order_item_data) {
-      $storage = $this->entityTypeManager->getStorage($order_item_data['purchased_entity_type']);
-      $purchased_entity = $storage->load($order_item_data['purchased_entity_id']);
-      if (!$purchased_entity || !$purchased_entity instanceof PurchasableEntityInterface) {
-        continue;
-      }
-      $store = $this->selectStore($purchased_entity);
-      $order_item = $this->orderItemStorage->createFromPurchasableEntity($purchased_entity, [
-        'quantity' => !empty($order_item_data['quantity']) ? $order_item_data['quantity'] : 1,
-      ]);
-      $context = new Context($this->currentUser(), $store);
-      $order_item->setUnitPrice($this->chainPriceResolver->resolve($purchased_entity, $order_item->getQuantity(), $context));
 
-      $order_type_id = $this->chainOrderTypeResolver->resolve($order_item);
-      $cart = $this->cartProvider->getCart($order_type_id, $store);
-      if (!$cart) {
-        $cart = $this->cartProvider->createCart($order_type_id, $store);
-      }
+    $renderer = \Drupal::getContainer()->get('renderer');
+    $context = new RenderContext();
+    $order_items = $renderer->executeInRenderContext($context, function () use ($document) {
+      $order_items = [];
+      foreach ($document['data'] as $order_item_data) {
+        $purchased_entity = $this->entityRepository->loadEntityByUuid(
+          $order_item_data['purchased_entity_type'],
+          $order_item_data['purchased_entity_id']
+        );
+        if (!$purchased_entity || !$purchased_entity instanceof PurchasableEntityInterface) {
+          continue;
+        }
+        $store = $this->selectStore($purchased_entity);
+        $order_item = $this->orderItemStorage->createFromPurchasableEntity($purchased_entity, [
+          'quantity' => !empty($order_item_data['quantity']) ? $order_item_data['quantity'] : 1,
+        ]);
+        $context = new Context($this->currentUser, $store);
+        $order_item->setUnitPrice($this->chainPriceResolver->resolve($purchased_entity, $order_item->getQuantity(), $context));
 
-      $order_item = $this->cartManager->addOrderItem($cart, $order_item, TRUE);
-      $resource_type = $this->resourceTypeRepository->get($order_item->getEntityTypeId(), $order_item->bundle());
-      $order_items[] = new ResourceObject($resource_type, $order_item);
-    }
+        $order_type_id = $this->chainOrderTypeResolver->resolve($order_item);
+        $cart = $this->cartProvider->getCart($order_type_id, $store);
+        if (!$cart) {
+          $cart = $this->cartProvider->createCart($order_type_id, $store);
+        }
+
+        $order_item = $this->cartManager->addOrderItem($cart, $order_item, TRUE);
+        $resource_type = $this->resourceTypeRepository->get($order_item->getEntityTypeId(), $order_item->bundle());
+        $order_items[] = new ResourceObject($resource_type, $order_item);
+      }
+      return $order_items;
+    });
 
     $entity_collection = new EntityCollection($order_items);
 
-    //    return $this->buildWrappedResponse($entity_collection, $request, $this->getIncludes($request, $entity_collection));
-    return $this->buildWrappedResponse($entity_collection, $request, new NullEntityCollection());
+    return $this->buildWrappedResponse($entity_collection, $request, $this->getIncludes($request, $entity_collection));
   }
 
   /**
@@ -278,20 +303,18 @@ class CartResourceController implements ContainerInjectionInterface {
     }
     elseif (count($stores) === 0) {
       // Malformed entity.
-      throw new \Exception('The given entity is not assigned to any store.');
+      throw new UnprocessableEntityHttpException('The given entity is not assigned to any store.');
     }
     else {
       $store = $this->currentStore->getStore();
       if (!in_array($store, $stores)) {
         // Indicates that the site listings are not filtered properly.
-        throw new \Exception("The given entity can't be purchased from the current store.");
+        throw new UnprocessableEntityHttpException("The given entity can't be purchased from the current store.");
       }
     }
 
     return $store;
   }
-
-
 
   /**
    * Builds a response with the appropriate wrapped document.
@@ -353,6 +376,8 @@ class CartResourceController implements ContainerInjectionInterface {
 
   /**
    * Fixes the includes parameter to ensure order_item.
+   *
+   * @todo remove, allow people to include if they want.
    *
    * @param \Symfony\Component\HttpFoundation\Request $request
    *   The current request.

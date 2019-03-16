@@ -2,10 +2,12 @@
 
 namespace Drupal\Tests\commerce_cart_api\Functional\jsonapi;
 
+use Drupal\commerce_order\Entity\OrderInterface;
 use Drupal\commerce_product\Entity\ProductVariationType;
 use Drupal\Component\Serialization\Json;
 use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Url;
+use Drupal\jsonapi\Normalizer\HttpExceptionNormalizer;
 use Drupal\user\Entity\User;
 use GuzzleHttp\RequestOptions;
 
@@ -15,7 +17,9 @@ final class CartResourceControllerTest extends CartResourceTestBase {
    * Test cart collection.
    */
   public function testCartCollection() {
-    $url = Url::fromRoute('commerce_cart_api.jsonapi.cart_collection');
+    $url = Url::fromRoute('commerce_cart_api.jsonapi.cart_collection', [], [
+      // 'query' => ['include' => 'order_items,order_items.purchased_entity'],
+    ]);
 
     // Create a cart for another user.
     $this->cartProvider->createCart('default', $this->store, User::getAnonymousUser());
@@ -191,18 +195,19 @@ final class CartResourceControllerTest extends CartResourceTestBase {
     // Create a cart for another user.
     $anon_cart = $this->cartProvider->createCart('default', $this->store, User::getAnonymousUser());
 
-    $url = Url::fromRoute('commerce_cart_api.jsonapi.cart_canonical', ['cart' => $anon_cart->uuid()]);
+    $url = Url::fromRoute('commerce_cart_api.jsonapi.cart_canonical', ['cart' => $anon_cart->uuid()], [
+      'query' => ['include' => 'order_items,order_items.purchased_entity'],
+    ]);
 
     $request_options = [];
     $request_options[RequestOptions::HEADERS]['Accept'] = 'application/vnd.api+json';
     $request_options = NestedArray::mergeDeep($request_options, $this->getAuthenticationRequestOptions());
 
     $response = $this->request('GET', $url, $request_options);
-    $this->assertSame(200, $response->getStatusCode());
+    $this->assertSame(403, $response->getStatusCode());
     $this->assertSame(['application/vnd.api+json'], $response->getHeader('Content-Type'));
     // There should be no body as the cart does not belong to the session.
     $this->assertEquals([
-      'data' => [],
       'jsonapi' => [
         'version' => '1.0',
         'meta' => [
@@ -211,8 +216,16 @@ final class CartResourceControllerTest extends CartResourceTestBase {
           ],
         ],
       ],
-      'links' => [
-        'self' => ['href' => $url->setAbsolute()->toString()],
+      'errors' => [
+        [
+          'title' => 'Forbidden',
+          'status' => 403,
+          'detail' => '',
+          'links' => [
+            'via' => ['href' => $url->setAbsolute()->toString()],
+            'info' => ['href' => HttpExceptionNormalizer::getInfoUrl(403)],
+          ],
+        ],
       ],
     ], Json::decode((string) $response->getBody()));
 
@@ -224,7 +237,7 @@ final class CartResourceControllerTest extends CartResourceTestBase {
 
     $url = Url::fromRoute('commerce_cart_api.jsonapi.cart_canonical', ['cart' => $cart->uuid()]);
     $response = $this->request('GET', $url, $request_options);
-    $this->assertSame(200, $response->getStatusCode());
+    $this->assertSame(200, $response->getStatusCode(), (string) $response->getBody());
     $this->assertSame(['application/vnd.api+json'], $response->getHeader('Content-Type'));
     // There should be no body as the cart does not belong to the session.
     $this->assertEquals([
@@ -367,7 +380,9 @@ final class CartResourceControllerTest extends CartResourceTestBase {
     $request_options = [];
     $request_options[RequestOptions::HEADERS]['Accept'] = 'application/vnd.api+json';
     $request_options = NestedArray::mergeDeep($request_options, $this->getAuthenticationRequestOptions());
-    $url = Url::fromRoute('commerce_cart_api.jsonapi.cart_collection');
+    $url = Url::fromRoute('commerce_cart_api.jsonapi.cart_collection', [], [
+      // 'query' => ['include' => 'order_items,order_items.purchased_entity'],
+    ]);
     $response = $this->request('GET', $url, $request_options);
     $this->assertSame(200, $response->getStatusCode());
     $this->assertSame(['application/vnd.api+json'], $response->getHeader('Content-Type'));
@@ -439,7 +454,9 @@ final class CartResourceControllerTest extends CartResourceTestBase {
     $cart = $order_storage->load($cart->id());
     $this->assertEquals(count($cart->getItems()), 0);
 
-    $url = Url::fromRoute('commerce_cart_api.jsonapi.cart_collection');
+    $url = Url::fromRoute('commerce_cart_api.jsonapi.cart_collection', [], [
+      // 'query' => ['include' => 'order_items,order_items.purchased_entity'],
+    ]);
     $response = $this->request('GET', $url, $request_options);
     $this->assertSame(200, $response->getStatusCode(), (string) $response->getBody());
     $this->assertSame(['application/vnd.api+json'], $response->getHeader('Content-Type'));
@@ -476,6 +493,88 @@ final class CartResourceControllerTest extends CartResourceTestBase {
               'links' => [
                 'self' => ['href' => Url::fromRoute('jsonapi.commerce_order--default.order_items.relationship.get', ['entity' => $cart->uuid()])->setAbsolute()->toString()],
                 'related' => ['href' => Url::fromRoute('jsonapi.commerce_order--default.order_items.related', ['entity' => $cart->uuid()])->setAbsolute()->toString()],
+              ],
+            ],
+          ],
+        ],
+      ],
+      'jsonapi' => [
+        'version' => '1.0',
+        'meta' => [
+          'links' => [
+            'self' => ['href' => 'http://jsonapi.org/format/1.0/'],
+          ],
+        ],
+      ],
+      'links' => [
+        'self' => ['href' => $url->setAbsolute()->toString()],
+      ],
+    ], Json::decode((string) $response->getBody()));
+  }
+
+  /**
+   * Test add to cart.
+   */
+  public function testCartAdd() {
+    $request_options = [];
+    $request_options[RequestOptions::HEADERS]['Accept'] = 'application/vnd.api+json';
+    $request_options[RequestOptions::HEADERS]['Content-Type'] = 'application/vnd.api+json';
+    $request_options[RequestOptions::BODY] = Json::encode([
+      'data' => [
+        [
+          'purchased_entity_type' => 'commerce_product_variation',
+          'purchased_entity_id' => $this->variation->uuid(),
+          'quantity' => 1,
+        ],
+      ],
+    ]);
+    $request_options = NestedArray::mergeDeep($request_options, $this->getAuthenticationRequestOptions());
+
+    $url = Url::fromRoute('commerce_cart_api.jsonapi.cart_add');
+    $response = $this->request('POST', $url, $request_options);
+    $this->assertSame(200, $response->getStatusCode(), (string) $response->getBody());
+    $this->assertSame(['application/vnd.api+json'], $response->getHeader('Content-Type'));
+
+    $order_storage = $this->container->get('entity_type.manager')->getStorage('commerce_order');
+    $cart = $order_storage->load(1);
+    assert($cart instanceof OrderInterface);
+    $this->assertEquals(count($cart->getItems()), 1);
+    $order_item = $cart->getItems()[0];
+
+    $this->assertEquals([
+      'data' => [
+        [
+          'type' => 'commerce_order_item--default',
+          'id' => $order_item->uuid(),
+          'links' => [
+            'self' => ['href' => Url::fromRoute('jsonapi.commerce_order_item--default.individual', ['entity' => $order_item->uuid()])->setAbsolute()->toString()],
+          ],
+          'attributes' => [
+            'drupal_internal__order_item_id' => $order_item->id(),
+            'title' => $order_item->label(),
+            'quantity' => $order_item->getQuantity(),
+            'unit_price' => $order_item->get('unit_price')->first()->getValue() + ['formatted' => '$1,000.00'],
+            'total_price' => $order_item->get('total_price')->first()->getValue() + ['formatted' => '$1,000.00'],
+          ],
+          'relationships' => [
+            'order_id' => [
+              'data' => [
+                'type' => 'commerce_order--default',
+                'id' => $cart->uuid(),
+              ],
+              'links' => [
+                'self' => ['href' => Url::fromRoute('jsonapi.commerce_order_item--default.order_id.relationship.get', ['entity' => $order_item->uuid()])->setAbsolute()->toString()],
+                'related' => ['href' => Url::fromRoute('jsonapi.commerce_order_item--default.order_id.related', ['entity' => $order_item->uuid()])->setAbsolute()->toString()],
+              ],
+            ],
+            'purchased_entity' => [
+              'data' => [
+                'type' => 'commerce_product_variation--default',
+                'id' => $this->variation->uuid(),
+              ],
+              'links' => [
+                'self' => ['href' => Url::fromRoute('jsonapi.commerce_order_item--default.purchased_entity.relationship.get', ['entity' => $order_item->uuid()])->setAbsolute()->toString()],
+                'related' => ['href' => Url::fromRoute('jsonapi.commerce_order_item--default.purchased_entity.related', ['entity' => $order_item->uuid()])->setAbsolute()->toString()],
               ],
             ],
           ],
