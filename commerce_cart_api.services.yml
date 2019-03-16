@@ -41,3 +41,10 @@ services:
   commerce_cart_api.field_access:
     class: Drupal\commerce_cart_api\FieldAccess
     arguments: ['@current_route_match']
+
+  paramconverter.commerce_jsonapi.cart_uuid:
+    parent: paramconverter.entity
+    class: Drupal\commerce_cart_api\ParamConverter\CartUuidConverter
+    tags:
+      # Priority 15, to ensure it runs before @paramconverter.jsonapi.entity_uuid
+      - { name: paramconverter, priority: 15 }

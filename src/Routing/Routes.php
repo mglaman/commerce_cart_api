@@ -4,7 +4,6 @@ namespace Drupal\commerce_cart_api\Routing;
 
 use Drupal\commerce_cart_api\Controller\CartResourceController;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
-use Drupal\jsonapi\ParamConverter\ResourceTypeConverter;
 use Drupal\jsonapi\ResourceType\ResourceTypeRepositoryInterface;
 use Drupal\jsonapi\Routing\Routes as JsonapiRoutes;
 use Symfony\Cmf\Component\Routing\RouteObjectInterface;
@@ -78,9 +77,9 @@ class Routes implements ContainerInjectionInterface {
     $routes = new RouteCollection();
 
     $routes->add('commerce_cart_api.jsonapi.cart_collection', $this->cartsCollection());
-    // @todo Add UUID loading support. JSON API won't do it for us.
-    // We don't have ResourceType, so the UUID ParamConvert does not run.
     $routes->add('commerce_cart_api.jsonapi.cart_canonical', $this->cartsCanonical());
+    $routes->add('commerce_cart_api.jsonapi.cart_clear', $this->cartClear());
+    $routes->add('commerce_cart_api.jsonapi.cart_add', $this->cartAdd());
 
     // Ensure JSON API prefix.
     $routes->addPrefix($this->jsonApiBasePath);
@@ -112,12 +111,30 @@ class Routes implements ContainerInjectionInterface {
     return $collection_route;
   }
   protected function cartsCanonical() {
-    $collection_route = new Route('/cart/{commerce_order}');
+    $collection_route = new Route('/cart/{cart}');
     $collection_route->addDefaults([RouteObjectInterface::CONTROLLER_NAME => CartResourceController::class . ':getCart']);
     $collection_route->setMethods(['GET']);
     $collection_route->setRequirement('_access', 'TRUE');
     $parameters = $collection_route->getOption('parameters') ?: [];
-    $parameters['commerce_order']['type'] = 'entity:commerce_order';
+    $parameters['cart']['type'] = 'entity:commerce_order';
+    $collection_route->setOption('parameters', $parameters);
+    return $collection_route;
+  }
+  protected function cartClear() {
+    $collection_route = new Route('/cart/{cart}/items');
+    $collection_route->addDefaults([RouteObjectInterface::CONTROLLER_NAME => CartResourceController::class . ':clearItems']);
+    $collection_route->setMethods(['DELETE']);
+    $parameters = $collection_route->getOption('parameters') ?: [];
+    $parameters['cart']['type'] = 'entity:commerce_order';
+    $collection_route->setOption('parameters', $parameters);
+    return $collection_route;
+  }
+  protected function cartAdd() {
+    $collection_route = new Route('/cart/add');
+    $collection_route->addDefaults([RouteObjectInterface::CONTROLLER_NAME => CartResourceController::class . ':addItems']);
+    $collection_route->setMethods(['POST']);
+    $parameters = $collection_route->getOption('parameters') ?: [];
+    $parameters['cart']['type'] = 'entity:commerce_order';
     $collection_route->setOption('parameters', $parameters);
     return $collection_route;
   }

@@ -8,4 +8,5 @@ dependencies:
   - commerce:commerce_cart
   - drupal:serialization
   - drupal:rest
+  # Needs to be stuck to 2.3 for now.
   - jsonapi:jsonapi
