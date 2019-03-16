@@ -8,3 +8,4 @@ dependencies:
   - commerce:commerce_cart
   - drupal:serialization
   - drupal:rest
+  - jsonapi:jsonapi
