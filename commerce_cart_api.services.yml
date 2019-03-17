@@ -1,8 +1,10 @@
 parameters:
   commerce_cart_api:
     use_cart_token_session: false
+    normalized_entity_references:
+      - order_items
+      - purchased_entity
 services:
-
   commerce_cart_api.normalizer.field_item:
     class: Drupal\commerce_cart_api\Normalizer\FieldItemNormalizer
     arguments: ['@current_route_match']
@@ -15,15 +17,9 @@ services:
     tags:
       - { name: normalizer, priority: 9 }
 
-  commerce_cart_api.normalizer.order_items:
-    class: Drupal\commerce_cart_api\Normalizer\OrderItemsNormalizer
-    arguments: ['@entity.repository', '@current_route_match']
-    tags:
-      - { name: normalizer, priority: 9 }
-
-  commerce_cart_api.normalizer.purchased_entity:
-    class: Drupal\commerce_cart_api\Normalizer\PurchasedEntityNormalizer
-    arguments: ['@entity.repository', '@current_route_match']
+  commerce_cart_api.normalizer.entity_references:
+    class: Drupal\commerce_cart_api\Normalizer\EntityReferenceNormalizer
+    arguments: ['@entity.repository', '@current_route_match', '%commerce_cart_api%']
     tags:
       - { name: normalizer, priority: 9 }
 
