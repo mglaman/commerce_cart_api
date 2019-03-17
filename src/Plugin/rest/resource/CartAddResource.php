@@ -209,13 +209,13 @@ class CartAddResource extends CartResourceBase {
     }
     elseif (count($stores) === 0) {
       // Malformed entity.
-      throw new \Exception('The given entity is not assigned to any store.');
+      throw new UnprocessableEntityHttpException('The given entity is not assigned to any store.');
     }
     else {
       $store = $this->currentStore->getStore();
       if (!in_array($store, $stores)) {
         // Indicates that the site listings are not filtered properly.
-        throw new \Exception("The given entity can't be purchased from the current store.");
+        throw new UnprocessableEntityHttpException("The given entity can't be purchased from the current store.");
       }
     }
 
