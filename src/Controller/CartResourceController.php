@@ -9,18 +9,19 @@ use Drupal\commerce_cart\CartSessionInterface;
 use Drupal\commerce_cart_api\Controller\jsonapi\EntityResourceShim;
 use Drupal\commerce_order\Entity\OrderInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Render\RenderContext;
+use Drupal\jsonapi\JsonApiResource\ResourceIdentifier;
 use Drupal\jsonapi\JsonApiResource\ResourceObject;
 use Drupal\jsonapi\JsonApiResource\ResourceObjectData;
 use Drupal\jsonapi\ResourceResponse;
+use Drupal\jsonapi\ResourceType\ResourceType;
 use Drupal\jsonapi\ResourceType\ResourceTypeRepositoryInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\commerce_cart\CartManager;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
-use Symfony\Component\Serializer\Exception\UnexpectedValueException;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -186,48 +187,27 @@ class CartResourceController implements ContainerInjectionInterface {
   }
 
   public function addItems(Request $request) {
-    try {
-      $received = (string) $request->getContent();
-      $document = $this->serializer->decode($received, 'api_json');
-    }
-    catch (UnexpectedValueException $e) {
-      // If an exception was thrown at this stage, there was a problem decoding
-      // the data. Throw a 400 HTTP exception.
-      throw new BadRequestHttpException($e->getMessage());
-    }
-    if (empty($document['data'])) {
-      throw new BadRequestHttpException('Document must contain data');
-    }
-
-    // Do an initial validation of the payload before any processing.
-    foreach ($document['data'] as $key => $order_item_data) {
-      if (!isset($order_item_data['purchased_entity_type'])) {
-        throw new UnprocessableEntityHttpException(sprintf('You must specify a purchasable entity type for row: %s', $key));
-      }
-      if (!isset($order_item_data['purchased_entity_id'])) {
-        throw new UnprocessableEntityHttpException(sprintf('You must specify a purchasable entity ID for row: %s', $key));
-      }
-      if (!$this->entityTypeManager->hasDefinition($order_item_data['purchased_entity_type'])) {
-        throw new UnprocessableEntityHttpException(sprintf('You must specify a valid purchasable entity type for row: %s', $key));
-      }
-    }
+    $resource_type = new ResourceType('virtual_cart', 'virtual_cart', EntityInterface::class);
+    // @todo: ensure that this is *actually* only purchasable entity types.
+    $purchasable_resource_types = $this->resourceTypeRepository->all();
+    $resource_type->setRelatableResourceTypes(['items' => $purchasable_resource_types]);
+    /* @var \Drupal\jsonapi\JsonApiResource\ResourceIdentifier[] $resource_identifiers */
+    $resource_identifiers = $this->inner->deserialize($resource_type, $request, ResourceIdentifier::class, 'items');
 
     $renderer = \Drupal::getContainer()->get('renderer');
     $context = new RenderContext();
-    $order_items = $renderer->executeInRenderContext($context, function () use ($document) {
-      $order_items = [];
-      foreach ($document['data'] as $order_item_data) {
+    $order_items = $renderer->executeInRenderContext($context, function () use ($resource_identifiers) {
+      foreach ($resource_identifiers as $resource_identifier) {
         $purchased_entity = $this->entityRepository->loadEntityByUuid(
-          $order_item_data['purchased_entity_type'],
-          $order_item_data['purchased_entity_id']
+          $resource_identifier->getResourceType()->getEntityTypeId(),
+          $resource_identifier->getId()
         );
         if (!$purchased_entity || !$purchased_entity instanceof PurchasableEntityInterface) {
           continue;
         }
         $store = $this->selectStore($purchased_entity);
-        $order_item = $this->orderItemStorage->createFromPurchasableEntity($purchased_entity, [
-          'quantity' => !empty($order_item_data['quantity']) ? $order_item_data['quantity'] : 1,
-        ]);
+        $quantity = ($meta = $resource_identifier->getMeta() && isset($meta['orderQuantity'])) ? $meta['orderQuantity'] : 1;
+        $order_item = $this->orderItemStorage->createFromPurchasableEntity($purchased_entity, ['quantity' => $quantity]);
         $context = new Context($this->currentUser, $store);
         $order_item->setUnitPrice($this->chainPriceResolver->resolve($purchased_entity, $order_item->getQuantity(), $context));
 
