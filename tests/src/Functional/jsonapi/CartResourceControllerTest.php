@@ -13,6 +13,11 @@ use GuzzleHttp\RequestOptions;
 
 final class CartResourceControllerTest extends CartResourceTestBase {
 
+  protected function setUp() {
+    parent::setUp();
+    $this->config('jsonapi.settings')->set('read_only', FALSE)->save(TRUE);
+  }
+
   /**
    * Test cart collection.
    */
