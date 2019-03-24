@@ -17,18 +17,12 @@ final class CartResourceControllerTest extends CartResourceTestBase {
    * Test cart collection.
    */
   public function testCartCollection() {
-    $url = Url::fromRoute('commerce_cart_api.jsonapi.cart_collection', [], [
-      // 'query' => ['include' => 'order_items,order_items.purchased_entity'],
-    ]);
+    $url = Url::fromRoute('commerce_cart_api.jsonapi.cart_collection', []);
 
     // Create a cart for another user.
     $this->cartProvider->createCart('default', $this->store, User::getAnonymousUser());
 
-    $request_options = [];
-    $request_options[RequestOptions::HEADERS]['Accept'] = 'application/vnd.api+json';
-    $request_options = NestedArray::mergeDeep($request_options, $this->getAuthenticationRequestOptions());
-
-    $response = $this->request('GET', $url, $request_options);
+    $response = $this->request('GET', $url, $this->getAuthenticationRequestOptions());
     $this->assertSame(200, $response->getStatusCode());
     $this->assertSame(['application/vnd.api+json'], $response->getHeader('Content-Type'));
     // There should be no body as the cart does not belong to the session.
@@ -53,7 +47,7 @@ final class CartResourceControllerTest extends CartResourceTestBase {
 
     $product_variation_type = ProductVariationType::load('default');
 
-    $response = $this->request('GET', $url, $request_options);
+    $response = $this->request('GET', $url, $this->getAuthenticationRequestOptions());
     $this->assertSame(200, $response->getStatusCode());
     $this->assertSame(['application/vnd.api+json'], $response->getHeader('Content-Type'));
     // There should be no body as the cart does not belong to the session.
@@ -195,15 +189,11 @@ final class CartResourceControllerTest extends CartResourceTestBase {
     // Create a cart for another user.
     $anon_cart = $this->cartProvider->createCart('default', $this->store, User::getAnonymousUser());
 
-    $url = Url::fromRoute('commerce_cart_api.jsonapi.cart_canonical', ['cart' => $anon_cart->uuid()], [
+    $url = Url::fromRoute('commerce_cart_api.jsonapi.cart_canonical', ['commerce_order' => $anon_cart->uuid()], [
       'query' => ['include' => 'order_items,order_items.purchased_entity'],
     ]);
 
-    $request_options = [];
-    $request_options[RequestOptions::HEADERS]['Accept'] = 'application/vnd.api+json';
-    $request_options = NestedArray::mergeDeep($request_options, $this->getAuthenticationRequestOptions());
-
-    $response = $this->request('GET', $url, $request_options);
+    $response = $this->request('GET', $url, $this->getAuthenticationRequestOptions());
     $this->assertSame(403, $response->getStatusCode());
     $this->assertSame(['application/vnd.api+json'], $response->getHeader('Content-Type'));
     // There should be no body as the cart does not belong to the session.
@@ -220,7 +210,7 @@ final class CartResourceControllerTest extends CartResourceTestBase {
         [
           'title' => 'Forbidden',
           'status' => 403,
-          'detail' => '',
+          'detail' => 'Order does not belong to the current user.',
           'links' => [
             'via' => ['href' => $url->setAbsolute()->toString()],
             'info' => ['href' => HttpExceptionNormalizer::getInfoUrl(403)],
@@ -235,8 +225,8 @@ final class CartResourceControllerTest extends CartResourceTestBase {
 
     $product_variation_type = ProductVariationType::load('default');
 
-    $url = Url::fromRoute('commerce_cart_api.jsonapi.cart_canonical', ['cart' => $cart->uuid()]);
-    $response = $this->request('GET', $url, $request_options);
+    $url = Url::fromRoute('commerce_cart_api.jsonapi.cart_canonical', ['commerce_order' => $cart->uuid()]);
+    $response = $this->request('GET', $url, $this->getAuthenticationRequestOptions());
     $this->assertSame(200, $response->getStatusCode(), (string) $response->getBody());
     $this->assertSame(['application/vnd.api+json'], $response->getHeader('Content-Type'));
     // There should be no body as the cart does not belong to the session.
@@ -377,13 +367,8 @@ final class CartResourceControllerTest extends CartResourceTestBase {
     $cart = $this->cartProvider->createCart('default', $this->store, $this->account);
     $this->cartManager->addEntity($cart, $this->variation, 5);
 
-    $request_options = [];
-    $request_options[RequestOptions::HEADERS]['Accept'] = 'application/vnd.api+json';
-    $request_options = NestedArray::mergeDeep($request_options, $this->getAuthenticationRequestOptions());
-    $url = Url::fromRoute('commerce_cart_api.jsonapi.cart_collection', [], [
-      // 'query' => ['include' => 'order_items,order_items.purchased_entity'],
-    ]);
-    $response = $this->request('GET', $url, $request_options);
+    $url = Url::fromRoute('commerce_cart_api.jsonapi.cart_collection');
+    $response = $this->request('GET', $url, $this->getAuthenticationRequestOptions());
     $this->assertSame(200, $response->getStatusCode());
     $this->assertSame(['application/vnd.api+json'], $response->getHeader('Content-Type'));
 
@@ -445,8 +430,8 @@ final class CartResourceControllerTest extends CartResourceTestBase {
       ],
     ], Json::decode((string) $response->getBody()));
 
-    $url = Url::fromRoute('commerce_cart_api.jsonapi.cart_clear', ['cart' => $cart->uuid()]);
-    $response = $this->request('DELETE', $url, $request_options);
+    $url = Url::fromRoute('commerce_cart_api.jsonapi.cart_clear', ['commerce_order' => $cart->uuid()]);
+    $response = $this->request('DELETE', $url, $this->getAuthenticationRequestOptions());
     $this->assertSame(204, $response->getStatusCode(), (string) $response->getBody());
 
     $order_storage = $this->container->get('entity_type.manager')->getStorage('commerce_order');
@@ -457,7 +442,7 @@ final class CartResourceControllerTest extends CartResourceTestBase {
     $url = Url::fromRoute('commerce_cart_api.jsonapi.cart_collection', [], [
       // 'query' => ['include' => 'order_items,order_items.purchased_entity'],
     ]);
-    $response = $this->request('GET', $url, $request_options);
+    $response = $this->request('GET', $url, $this->getAuthenticationRequestOptions());
     $this->assertSame(200, $response->getStatusCode(), (string) $response->getBody());
     $this->assertSame(['application/vnd.api+json'], $response->getHeader('Content-Type'));
 

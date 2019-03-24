@@ -110,31 +110,34 @@ class Routes implements ContainerInjectionInterface {
     $collection_route->setRequirement('_access', 'TRUE');
     return $collection_route;
   }
+
   protected function cartsCanonical() {
-    $collection_route = new Route('/cart/{cart}');
+    $collection_route = new Route('/cart/{commerce_order}');
     $collection_route->addDefaults([RouteObjectInterface::CONTROLLER_NAME => CartResourceController::class . ':getCart']);
     $collection_route->setMethods(['GET']);
     $collection_route->setRequirement('_access', 'TRUE');
     $parameters = $collection_route->getOption('parameters') ?: [];
-    $parameters['cart']['type'] = 'entity:commerce_order';
+    $parameters['commerce_order']['type'] = 'entity:commerce_order';
     $collection_route->setOption('parameters', $parameters);
     return $collection_route;
   }
+
   protected function cartClear() {
-    $collection_route = new Route('/cart/{cart}/items');
+    $collection_route = new Route('/cart/{commerce_order}/items');
     $collection_route->addDefaults([RouteObjectInterface::CONTROLLER_NAME => CartResourceController::class . ':clearItems']);
     $collection_route->setMethods(['DELETE']);
     $parameters = $collection_route->getOption('parameters') ?: [];
-    $parameters['cart']['type'] = 'entity:commerce_order';
+    $parameters['commerce_order']['type'] = 'entity:commerce_order';
     $collection_route->setOption('parameters', $parameters);
     return $collection_route;
   }
+
   protected function cartAdd() {
     $collection_route = new Route('/cart/add');
     $collection_route->addDefaults([RouteObjectInterface::CONTROLLER_NAME => CartResourceController::class . ':addItems']);
     $collection_route->setMethods(['POST']);
     $parameters = $collection_route->getOption('parameters') ?: [];
-    $parameters['cart']['type'] = 'entity:commerce_order';
+    $parameters['commerce_order']['type'] = 'entity:commerce_order';
     $collection_route->setOption('parameters', $parameters);
     return $collection_route;
   }

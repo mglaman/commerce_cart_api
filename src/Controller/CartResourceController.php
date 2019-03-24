@@ -182,7 +182,7 @@ class CartResourceController implements ContainerInjectionInterface {
    *
    * @param \Symfony\Component\HttpFoundation\Request $request
    *   The request.
-   * @param \Drupal\commerce_order\Entity\OrderInterface $cart
+   * @param \Drupal\commerce_order\Entity\OrderInterface $commerce_order
    *   The order.
    *
    * @return \Drupal\jsonapi\ResourceResponse
@@ -191,10 +191,10 @@ class CartResourceController implements ContainerInjectionInterface {
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function getCart(Request $request, OrderInterface $cart) {
+  public function getCart(Request $request, OrderInterface $commerce_order) {
     $this->fixInclude($request);
-    $resource_type = $this->resourceTypeRepository->get($cart->getEntityTypeId(), $cart->bundle());
-    $resource_object = new ResourceObject($resource_type, $cart);
+    $resource_type = $this->resourceTypeRepository->get($commerce_order->getEntityTypeId(), $commerce_order->bundle());
+    $resource_object = new ResourceObject($resource_type, $commerce_order);
     // @todo generating this causes 500.
     // $self_link = new Link(new CacheableMetadata(), Url::fromRoute('commerce_checkout.form', ['commerce_order' => $cart->id()]), ['checkout']);
     $links = new LinkCollection([]);

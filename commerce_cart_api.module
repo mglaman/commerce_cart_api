@@ -6,6 +6,7 @@
  */
 
 use Drupal\commerce_cart_api\Plugin\Field\FieldType\FormattablePriceItem;
+use Drupal\commerce_order\Entity\OrderInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Session\AccountInterface;
@@ -31,12 +32,9 @@ function commerce_cart_api_field_info_alter(&$info) {
  * Implements hook_entity_access().
  */
 function commerce_cart_api_entity_access(\Drupal\Core\Entity\EntityInterface $entity, $operation, \Drupal\Core\Session\AccountInterface $account) {
-  if ($entity instanceof \Drupal\commerce_order\Entity\OrderInterface) {
+  if (($entity instanceof OrderInterface) && $operation === 'view') {
     $cart_session = \Drupal::getContainer()->get('commerce_cart.cart_provider');
-    if ($operation === 'view') {
-      $cart_ids = $cart_session->getCartIds($account);
-      return \Drupal\Core\Access\AccessResult::allowedIf(in_array($entity->id(), $cart_ids));
-    }
-    $stop = null;
+    $cart_ids = $cart_session->getCartIds($account);
+    return \Drupal\Core\Access\AccessResult::allowedIf(in_array((int) $entity->id(), $cart_ids, TRUE));
   }
 }

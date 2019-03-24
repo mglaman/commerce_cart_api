@@ -52,11 +52,7 @@ class CartApiAccessCheck implements AccessInterface {
   public function access(Route $route, RouteMatchInterface $route_match, AccountInterface $account) {
     // If the route has no parameters (cart collection), allow.
     $parameters = $route->getOption('parameters');
-
     $order_parameter_name = 'commerce_order';
-    if ($route->getRequirement('_content_type_format') === 'api_json') {
-      $order_parameter_name = 'cart';
-    }
 
     if (empty($parameters[$order_parameter_name])) {
       return AccessResult::allowed();
@@ -65,18 +61,18 @@ class CartApiAccessCheck implements AccessInterface {
     // If there is no cart, no access.
     $order = $route_match->getParameter($order_parameter_name);
     if (!$order || !$order instanceof OrderInterface) {
-      return AccessResult::forbidden();
+      return AccessResult::forbidden('Order is not converted');
     }
 
     // Carts must be a draft and flagged as a cart.
     if (empty($order->cart->value) || $order->getState()->value !== 'draft') {
-      return AccessResult::forbidden()->addCacheableDependency($order);
+      return AccessResult::forbidden('Order is not a draft or cart')->addCacheableDependency($order);
     }
 
     // Ensure cart belongs to the current user.
     $carts = $this->cartProvider->getCartIds($account);
-    if (!in_array($order->id(), $carts, TRUE)) {
-      return AccessResult::forbidden()->addCacheableDependency($order);
+    if (!in_array((int) $order->id(), $carts, TRUE)) {
+      return AccessResult::forbidden('Order does not belong to the current user.')->addCacheableDependency($order);
     }
 
     // If there is also an order item in the route, make sure it belongs
