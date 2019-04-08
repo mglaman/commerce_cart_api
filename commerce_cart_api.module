@@ -17,12 +17,3 @@ function commerce_cart_api_entity_field_access($operation, FieldDefinitionInterf
   $field_access = \Drupal::getContainer()->get('commerce_cart_api.field_access');
   return $field_access->handle($operation, $field_definition, $account, $items);
 }
-
-/**
- * Implements hook_field_info_alter().
- */
-function commerce_cart_api_field_info_alter(&$info) {
-  if (isset($info['commerce_price'])) {
-    $info['commerce_price']['class'] = FormattablePriceItem::class;
-  }
-}
