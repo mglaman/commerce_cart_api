@@ -20,15 +20,6 @@ function commerce_cart_api_entity_field_access($operation, FieldDefinitionInterf
 }
 
 /**
- * Implements hook_field_info_alter().
- */
-function commerce_cart_api_field_info_alter(&$info) {
-  if (isset($info['commerce_price'])) {
-    $info['commerce_price']['class'] = FormattablePriceItem::class;
-  }
-}
-
-/**
  * Implements hook_entity_access().
  */
 function commerce_cart_api_entity_access(\Drupal\Core\Entity\EntityInterface $entity, $operation, \Drupal\Core\Session\AccountInterface $account) {
