@@ -158,7 +158,7 @@ class CartResourceController implements ContainerInjectionInterface {
    *
    * @param \Symfony\Component\HttpFoundation\Request $request
    *   The request.
-   * @param \Drupal\commerce_order\Entity\OrderInterface $cart
+   * @param \Drupal\commerce_order\Entity\OrderInterface $commerce_order
    *   The order.
    *
    * @return \Drupal\jsonapi\ResourceResponse
@@ -167,7 +167,7 @@ class CartResourceController implements ContainerInjectionInterface {
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function getCart(Request $request, OrderInterface $cart) {
+  public function getCart(Request $request, OrderInterface $commerce_order) {
     $this->fixInclude($request);
     return $this->inner->getIndividual($cart, $request);
   }
