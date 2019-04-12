@@ -13,6 +13,11 @@ use GuzzleHttp\RequestOptions;
 
 final class CartResourceControllerTest extends CartResourceTestBase {
 
+  protected function setUp() {
+    parent::setUp();
+    $this->config('jsonapi.settings')->set('read_only', FALSE)->save(TRUE);
+  }
+
   /**
    * Test cart collection.
    */
@@ -507,9 +512,11 @@ final class CartResourceControllerTest extends CartResourceTestBase {
     $request_options[RequestOptions::BODY] = Json::encode([
       'data' => [
         [
-          'purchased_entity_type' => 'commerce_product_variation',
-          'purchased_entity_id' => $this->variation->uuid(),
-          'quantity' => 1,
+          'type' => $this->variation->getEntityTypeId() . '--' . $this->variation->bundle(),
+          'id' => $this->variation->uuid(),
+          'meta' => [
+            'orderQuantity' => 1,
+          ]
         ],
       ],
     ]);
