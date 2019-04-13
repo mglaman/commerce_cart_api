@@ -140,9 +140,6 @@ class CartResourceController implements ContainerInjectionInterface {
    *
    */
   public function getCarts(Request $request) {
-    // @todo removing fixInclude here breaks the response...
-    $this->fixInclude($request);
-
     $carts = $this->cartProvider->getCarts();
     $primary_data = new ResourceObjectData(array_map(function (OrderInterface $cart) {
       $resource_type = $this->resourceTypeRepository->get($cart->getEntityTypeId(), $cart->bundle());
