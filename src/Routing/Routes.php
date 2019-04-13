@@ -136,9 +136,6 @@ class Routes implements ContainerInjectionInterface {
     $collection_route = new Route('/cart/add');
     $collection_route->addDefaults([RouteObjectInterface::CONTROLLER_NAME => CartResourceController::class . ':addItems']);
     $collection_route->setMethods(['POST']);
-    $parameters = $collection_route->getOption('parameters') ?: [];
-    $parameters['commerce_order']['type'] = 'entity:commerce_order';
-    $collection_route->setOption('parameters', $parameters);
     return $collection_route;
   }
 }

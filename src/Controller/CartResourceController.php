@@ -144,12 +144,10 @@ class CartResourceController implements ContainerInjectionInterface {
     $this->fixInclude($request);
 
     $carts = $this->cartProvider->getCarts();
-
     $primary_data = new ResourceObjectData(array_map(function (OrderInterface $cart) {
       $resource_type = $this->resourceTypeRepository->get($cart->getEntityTypeId(), $cart->bundle());
       return ResourceObject::createFromEntity($resource_type, $cart);
     }, $carts));
-
     return $this->inner->buildWrappedResponse($primary_data, $request, $this->inner->getIncludes($request, $primary_data));
   }
 
@@ -187,12 +185,15 @@ class CartResourceController implements ContainerInjectionInterface {
   }
 
   public function addItems(Request $request) {
-    $resource_type = new ResourceType('virtual_cart', 'virtual_cart', EntityInterface::class);
+    // @todo `default` may not exist. Order items are not a based field, yet.
+    // @todo once `items` is a base field, change to "virtual".
+    $resource_type = new ResourceType('commerce_order', 'default', EntityInterface::class);
     // @todo: ensure that this is *actually* only purchasable entity types.
+    /* @var \Drupal\jsonapi\ResourceType\ResourceType[] $purchasable_resource_types */
     $purchasable_resource_types = $this->resourceTypeRepository->all();
-    $resource_type->setRelatableResourceTypes(['items' => $purchasable_resource_types]);
+    $resource_type->setRelatableResourceTypes(['order_items' => $purchasable_resource_types]);
     /* @var \Drupal\jsonapi\JsonApiResource\ResourceIdentifier[] $resource_identifiers */
-    $resource_identifiers = $this->inner->deserialize($resource_type, $request, ResourceIdentifier::class, 'items');
+    $resource_identifiers = $this->inner->deserialize($resource_type, $request, ResourceIdentifier::class, 'order_items');
 
     $renderer = \Drupal::getContainer()->get('renderer');
     $context = new RenderContext();
@@ -218,13 +219,13 @@ class CartResourceController implements ContainerInjectionInterface {
         }
 
         $order_item = $this->cartManager->addOrderItem($cart, $order_item, TRUE);
-        $resource_type = $this->resourceTypeRepository->get($order_item->getEntityTypeId(), $order_item->bundle());
-        $order_items[] = ResourceObject::createFromEntity($resource_type, $order_item);
+        $order_item_resource_type = $this->resourceTypeRepository->get($order_item->getEntityTypeId(), $order_item->bundle());
+        $order_items[] = ResourceObject::createFromEntity($order_item_resource_type, $order_item);
       }
       return $order_items;
     });
 
-    $primary_data = new ResourceObjectData([$order_items]);
+    $primary_data = new ResourceObjectData($order_items);
 
     return $this->inner->buildWrappedResponse($primary_data, $request, $this->inner->getIncludes($request, $primary_data));
   }
