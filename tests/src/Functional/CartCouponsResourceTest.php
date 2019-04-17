@@ -59,7 +59,7 @@ class CartCouponsResourceTest extends CartResourceTestBase {
 
     $coupon = Coupon::create([
       'promotion_id' => $promotion->id(),
-      'code' => 'coupon_code',
+      'code' => 'PERCENTAGE_OFF',
       'usage_limit' => 1,
       'status' => TRUE,
     ]);
@@ -72,15 +72,15 @@ class CartCouponsResourceTest extends CartResourceTestBase {
     $this->cartManager->addEntity($cart, $this->variation, 2);
     $this->assertEquals(count($cart->getItems()), 1);
 
-    $url = Url::fromUri('base:cart/1/coupons');
+    $url = Url::fromUri("base:cart/{$cart->id()}/coupons");
     $url->setOption('query', ['_format' => static::$format]);
     $request_options = $this->getAuthenticationRequestOptions('PATCH');
     $request_options[RequestOptions::HEADERS]['Content-Type'] = static::$mimeType;
     $request_options[RequestOptions::BODY] = sprintf('{ "coupon_code": "%s"}', $coupon->getCode());
     $response = $this->request('PATCH', $url, $request_options);
-    $this->assertSame(200, $response->getStatusCode());
-    $response_data = Json::decode($response->getBody()->getContents());
-    $this->assertEquals([$coupon->id()], $response_data['coupons']);
+    $this->assertResourceResponse(200, FALSE, $response);
+    $response_body = Json::decode((string) $response->getBody());
+    $this->assertEquals([$coupon->id()], $response_body['coupons']);
 
     $order_storage = $this->container->get('entity_type.manager')->getStorage('commerce_order');
     $order_storage->resetCache();
@@ -97,7 +97,6 @@ class CartCouponsResourceTest extends CartResourceTestBase {
       'stores' => [$this->store->id()],
       'usage_limit' => 1,
       'start_date' => '2017-01-01',
-      'end_date' => '2018-01-01',
       'status' => TRUE,
       'offer' => [
         'target_plugin_id' => 'order_item_percentage_off',
@@ -107,23 +106,22 @@ class CartCouponsResourceTest extends CartResourceTestBase {
       ],
     ]);
     $promotion->save();
-
     $coupon = Coupon::create([
       'promotion_id' => $promotion->id(),
-      'code' => 'coupon_code',
+      'code' => 'INVALID_COUPON_CODE',
       'usage_limit' => 1,
-      'status' => TRUE,
+      'status' => FALSE,
     ]);
     $coupon->save();
 
-    // Add a cart that does belong to the account.
     $cart = $this->container->get('commerce_cart.cart_provider')->createCart('default', $this->store, $this->account);
     $this->assertInstanceOf(OrderInterface::class, $cart);
     // Add order item to the cart.
     $this->cartManager->addEntity($cart, $this->variation, 2);
     $this->assertEquals(count($cart->getItems()), 1);
 
-    $url = Url::fromUri('base:cart/1/coupons');
+    // Test an invalid coupon.
+    $url = Url::fromUri("base:cart/{$cart->id()}/coupons");
     $url->setOption('query', ['_format' => static::$format]);
     $request_options = $this->getAuthenticationRequestOptions('PATCH');
     $request_options[RequestOptions::HEADERS]['Content-Type'] = static::$mimeType;
@@ -131,14 +129,14 @@ class CartCouponsResourceTest extends CartResourceTestBase {
     $response = $this->request('PATCH', $url, $request_options);
     $this->assertResourceErrorResponse(422, '12232 is not a valid coupon code.', $response);
 
-
-    $url = Url::fromUri('base:cart/1/coupons');
+    // Test the disabled coupon.
+    $url = Url::fromUri("base:cart/{$cart->id()}/coupons");
     $url->setOption('query', ['_format' => static::$format]);
     $request_options = $this->getAuthenticationRequestOptions('PATCH');
     $request_options[RequestOptions::HEADERS]['Content-Type'] = static::$mimeType;
     $request_options[RequestOptions::BODY] = sprintf('{ "coupon_code": "%s"}', $coupon->getCode());
     $response = $this->request('PATCH', $url, $request_options);
-    $this->assertResourceErrorResponse(422, '', $response);
+    $this->assertResourceErrorResponse(422, 'INVALID_COUPON_CODE is not a valid coupon code.', $response);
   }
 
 }
