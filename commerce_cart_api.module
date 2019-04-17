@@ -6,6 +6,7 @@
  */
 
 use Drupal\commerce_cart_api\Plugin\Field\FieldType\FormattablePriceItem;
+use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Session\AccountInterface;
@@ -16,4 +17,13 @@ use Drupal\Core\Session\AccountInterface;
 function commerce_cart_api_entity_field_access($operation, FieldDefinitionInterface $field_definition, AccountInterface $account, FieldItemListInterface $items = NULL) {
   $field_access = \Drupal::getContainer()->get('commerce_cart_api.field_access');
   return $field_access->handle($operation, $field_definition, $account, $items);
+}
+
+/**
+ * Implements hook_entity_base_field_info_alter().
+ */
+function commerce_cart_api_entity_base_field_info_alter(&$fields, EntityTypeInterface $entity_type) {
+  if (isset($fields['coupons']) && ($entity_type->id() === 'commerce_order')) {
+    $fields['coupons']->addConstraint('CouponValid');
+  }
 }
