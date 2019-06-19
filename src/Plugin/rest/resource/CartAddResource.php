@@ -10,6 +10,7 @@ use Drupal\commerce_order\Resolver\ChainOrderTypeResolverInterface;
 use Drupal\commerce_price\Resolver\ChainPriceResolverInterface;
 use Drupal\commerce_product\Entity\ProductVariation;
 use Drupal\commerce_store\CurrentStoreInterface;
+use Drupal\Core\Entity\EntityRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\rest\ModifiedResourceResponse;
@@ -74,6 +75,13 @@ class CartAddResource extends CartResourceBase {
   protected $currentUser;
 
   /**
+   * The entity repository.
+   *
+   * @var \Drupal\Core\Entity\EntityRepositoryInterface
+   */
+  protected $entityRepository;
+
+  /**
    * Constructs a new CartAddResource object.
    *
    * @param array $configuration
@@ -100,10 +108,13 @@ class CartAddResource extends CartResourceBase {
    *   The chain base price resolver.
    * @param \Drupal\Core\Session\AccountInterface $current_user
    *   The current user.
+   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
+   *   The entity repository.
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, array $serializer_formats, LoggerInterface $logger, CartProviderInterface $cart_provider, CartManagerInterface $cart_manager, EntityTypeManagerInterface $entity_type_manager, ChainOrderTypeResolverInterface $chain_order_type_resolver, CurrentStoreInterface $current_store, ChainPriceResolverInterface $chain_price_resolver, AccountInterface $current_user) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, array $serializer_formats, LoggerInterface $logger, CartProviderInterface $cart_provider, CartManagerInterface $cart_manager, EntityTypeManagerInterface $entity_type_manager, ChainOrderTypeResolverInterface $chain_order_type_resolver, CurrentStoreInterface $current_store, ChainPriceResolverInterface $chain_price_resolver, AccountInterface $current_user, EntityRepositoryInterface $entity_repository) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger, $cart_provider, $cart_manager);
     $this->entityTypeManager = $entity_type_manager;
     $this->orderItemStorage = $entity_type_manager->getStorage('commerce_order_item');
@@ -111,6 +122,7 @@ class CartAddResource extends CartResourceBase {
     $this->currentStore = $current_store;
     $this->chainPriceResolver = $chain_price_resolver;
     $this->currentUser = $current_user;
+    $this->entityRepository = $entity_repository;
   }
 
   /**
@@ -129,7 +141,8 @@ class CartAddResource extends CartResourceBase {
       $container->get('commerce_order.chain_order_type_resolver'),
       $container->get('commerce_store.current_store'),
       $container->get('commerce_price.chain_price_resolver'),
-      $container->get('current_user')
+      $container->get('current_user'),
+      $container->get('entity.repository')
     );
   }
 
@@ -167,6 +180,7 @@ class CartAddResource extends CartResourceBase {
       if (!$purchased_entity || !$purchased_entity instanceof PurchasableEntityInterface) {
         continue;
       }
+      $purchased_entity = $this->entityRepository->getTranslationFromContext($purchased_entity);
       $store = $this->selectStore($purchased_entity);
       $order_item = $this->orderItemStorage->createFromPurchasableEntity($purchased_entity, [
         'quantity' => (!empty($order_item_data['quantity'])) ? $order_item_data['quantity'] : 1,
