@@ -72,12 +72,13 @@ Example JSON response for above.
 ## POST
 
 Example to add items to cart. Creates or carts or adds to existing.
+Optional: Add the "combine" property to the payload (TRUE by default). FALSE will create another order item, while TRUE will increment an existing item.
 
 ```bash
 curl -X POST \
   'http://localhost:32775/cart/add?_format=json' \
   -H 'Content-Type: application/json' \
-  -d '[{ "purchased_entity_type": "commerce_product_variation", "purchased_entity_id": "6", "quantity": "1"}]'
+  -d '[{ "purchased_entity_type": "commerce_product_variation", "purchased_entity_id": "6", "quantity": "1", "combine": true }]'
 ```
 
 Response

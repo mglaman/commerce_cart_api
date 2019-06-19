@@ -193,7 +193,10 @@ class CartAddResource extends CartResourceBase {
       if (!$cart) {
         $cart = $this->cartProvider->createCart($order_type_id, $store);
       }
-      $order_items[] = $this->cartManager->addOrderItem($cart, $order_item, TRUE);
+      if (!isset($order_item_data['combine'])) {
+        $order_item_data['combine'] = TRUE;
+      }
+      $order_items[] = $this->cartManager->addOrderItem($cart, $order_item, $order_item_data['combine']);
     }
 
     $response = new ModifiedResourceResponse(array_values($order_items), 200);

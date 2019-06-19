@@ -126,4 +126,41 @@ class CartAddResourceTest extends CartResourceTestBase {
     $this->assertEquals($response_body[$item_delta]['total_price']['currency_code'], 'USD');
   }
 
+  public function testCombine() {
+    $url = Url::fromUri('base:cart/add');
+    $url->setOption('query', ['_format' => static::$format]);
+
+    $request_options = $this->getAuthenticationRequestOptions('POST');
+    $request_options[RequestOptions::HEADERS]['Content-Type'] = static::$mimeType;
+
+    // Add item when no cart exists.
+    $request_options[RequestOptions::BODY] = '[{ "purchased_entity_type": "commerce_product_variation", "purchased_entity_id": "1", "quantity": "1"}]';
+
+    $response = $this->request('POST', $url, $request_options);
+    $this->assertResourceResponse(200, FALSE, $response);
+    $response_body = Json::decode((string) $response->getBody());
+    $this->assertEquals(count($response_body), 1);
+    $this->assertEquals($response_body[0]['order_item_id'], 1);
+    $this->assertEquals($response_body[0]['purchased_entity']['variation_id'], 1);
+    $this->assertEquals($response_body[0]['quantity'], 1);
+    $this->assertEquals($response_body[0]['unit_price']['number'], 1000);
+    $this->assertEquals($response_body[0]['unit_price']['currency_code'], 'USD');
+    $this->assertEquals($response_body[0]['total_price']['number'], 1000);
+    $this->assertEquals($response_body[0]['total_price']['currency_code'], 'USD');
+
+    // Add two more of the same item.
+    $request_options[RequestOptions::BODY] = '[{ "purchased_entity_type": "commerce_product_variation", "purchased_entity_id": "1", "quantity": "2", "combine": false}]';
+
+    $response = $this->request('POST', $url, $request_options);
+    $this->assertResourceResponse(200, FALSE, $response);
+    $response_body = Json::decode((string) $response->getBody());
+    $this->assertCount(1, $response_body);
+    $this->assertEquals($response_body[0]['order_item_id'], 2);
+    $this->assertEquals($response_body[0]['quantity'], 2);
+    $this->assertEquals($response_body[0]['unit_price']['number'], 1000);
+    $this->assertEquals($response_body[0]['unit_price']['currency_code'], 'USD');
+    $this->assertEquals($response_body[0]['total_price']['number'], 2000);
+    $this->assertEquals($response_body[0]['total_price']['currency_code'], 'USD');
+  }
+
 }
