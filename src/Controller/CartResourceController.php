@@ -79,6 +79,9 @@ class CartResourceController implements ContainerInjectionInterface {
 
   private $chainOrderTypeResolver;
 
+  /**
+   * @var \Drupal\commerce_order\OrderItemStorageInterface
+   */
   private $orderItemStorage;
 
   private $entityRepository;
@@ -195,6 +198,7 @@ class CartResourceController implements ContainerInjectionInterface {
     $renderer = \Drupal::getContainer()->get('renderer');
     $context = new RenderContext();
     $order_items = $renderer->executeInRenderContext($context, function () use ($resource_identifiers) {
+      $order_items = [];
       foreach ($resource_identifiers as $resource_identifier) {
         $purchased_entity = $this->entityRepository->loadEntityByUuid(
           $resource_identifier->getResourceType()->getEntityTypeId(),
@@ -204,7 +208,7 @@ class CartResourceController implements ContainerInjectionInterface {
           continue;
         }
         $store = $this->selectStore($purchased_entity);
-        $quantity = ($meta = $resource_identifier->getMeta() && isset($meta['orderQuantity'])) ? $meta['orderQuantity'] : 1;
+        $quantity = ($meta = ($resource_identifier->getMeta() && isset($meta['orderQuantity']))) ? $meta['orderQuantity'] : 1;
         $order_item = $this->orderItemStorage->createFromPurchasableEntity($purchased_entity, ['quantity' => $quantity]);
         $context = new Context($this->currentUser, $store);
         $order_item->setUnitPrice($this->chainPriceResolver->resolve($purchased_entity, $order_item->getQuantity(), $context));
@@ -215,7 +219,7 @@ class CartResourceController implements ContainerInjectionInterface {
           $cart = $this->cartProvider->createCart($order_type_id, $store);
         }
 
-        $order_item = $this->cartManager->addOrderItem($cart, $order_item, TRUE);
+        $order_item = $this->cartManager->addOrderItem($cart, $order_item);
         $order_item_resource_type = $this->resourceTypeRepository->get($order_item->getEntityTypeId(), $order_item->bundle());
         $order_items[] = ResourceObject::createFromEntity($order_item_resource_type, $order_item);
       }
