@@ -148,7 +148,12 @@ class CartResourceController implements ContainerInjectionInterface {
       $resource_type = $this->resourceTypeRepository->get($cart->getEntityTypeId(), $cart->bundle());
       return ResourceObject::createFromEntity($resource_type, $cart);
     }, $carts));
-    return $this->inner->buildWrappedResponse($primary_data, $request, $this->inner->getIncludes($request, $primary_data));
+    $response = $this->inner->buildWrappedResponse($primary_data, $request, $this->inner->getIncludes($request, $primary_data));
+    $response->getCacheableMetadata()->addCacheContexts([
+      'store',
+      'cart',
+    ]);
+    return $response;
   }
 
   /**
@@ -167,7 +172,7 @@ class CartResourceController implements ContainerInjectionInterface {
    */
   public function getCart(Request $request, OrderInterface $commerce_order) {
     $this->fixInclude($request);
-    return $this->inner->getIndividual($cart, $request);
+    return $this->inner->getIndividual($commerce_order, $request);
   }
 
   /**
