@@ -2,7 +2,7 @@ name: 'Commerce Cart API'
 type: module
 description: 'Provides a RESTful interface to interact with carts in Drupal Commerce via a lightweight public API.'
 core: 8.x
-package: 'Commerce (contrib)'
+package: 'Commerce (web services)'
 dependencies:
   - commerce:commerce
   - commerce:commerce_cart
