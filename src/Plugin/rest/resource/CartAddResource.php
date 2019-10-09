@@ -184,7 +184,7 @@ class CartAddResource extends CartResourceBase {
       $store = $this->selectStore($purchased_entity);
       $order_item = $this->orderItemStorage->createFromPurchasableEntity($purchased_entity, [
         'quantity' => (!empty($order_item_data['quantity'])) ? $order_item_data['quantity'] : 1,
-      ]);
+      ] + $order_item_data['extended_fields']);
       $context = new Context($this->currentUser, $store);
       $order_item->setUnitPrice($this->chainPriceResolver->resolve($purchased_entity, $order_item->getQuantity(), $context));
 
