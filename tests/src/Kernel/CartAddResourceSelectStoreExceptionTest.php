@@ -2,9 +2,10 @@
 
 namespace Drupal\Tests\commerce_cart_api\Kernel;
 
-use Drupal\commerce_cart_api\Plugin\rest\resource\CartAddResource;
+use Drupal\commerce_cart_api\Controller\CartResourceController;
 use Drupal\commerce_product\Entity\Product;
 use Drupal\commerce_product\Entity\ProductVariation;
+use Drupal\Component\Serialization\Json;
 use Drupal\Core\Entity\Entity\EntityFormMode;
 use Drupal\Tests\commerce\Kernel\CommerceKernelTestBase;
 use Symfony\Component\HttpFoundation\Request;
@@ -20,6 +21,8 @@ final class CartAddResourceSelectStoreExceptionTest extends CommerceKernelTestBa
    */
   public static $modules = [
     'serialization',
+    'jsonapi',
+    'jsonapi_resources',
     'entity_reference_revisions',
     'profile',
     'state_machine',
@@ -44,6 +47,7 @@ final class CartAddResourceSelectStoreExceptionTest extends CommerceKernelTestBa
     ])->save();
     $this->installConfig([
       'commerce_product',
+      'commerce_order',
     ]);
   }
 
@@ -64,17 +68,22 @@ final class CartAddResourceSelectStoreExceptionTest extends CommerceKernelTestBa
     $product->save();
 
     $request = $this->prophesize(Request::class);
+    $request->getContent()->willReturn(Json::encode([
+      'data' => [
+        [
+          'type' => 'commerce_product_variation--default',
+          'id' => $product_variation->uuid(),
+          'meta' => [
+            'orderQuantity' => 1,
+          ],
+        ],
+      ],
+    ]));
 
     $this->setExpectedException(UnprocessableEntityHttpException::class, 'The given entity is not assigned to any store.');
 
     $controller = $this->getController();
-    $controller->post([
-      [
-        'purchased_entity_type' => 'commerce_product_variation',
-        'purchased_entity_id' => $product_variation->id(),
-        'quantity' => 1,
-      ],
-    ], $request->reveal());
+    $controller->addItems($request->reveal());
   }
 
   /**
@@ -97,39 +106,38 @@ final class CartAddResourceSelectStoreExceptionTest extends CommerceKernelTestBa
     $product->save();
 
     $request = $this->prophesize(Request::class);
+    $request->getContent()->willReturn(Json::encode([
+      'data' => [
+        [
+          'type' => 'commerce_product_variation--default',
+          'id' => $product_variation->uuid(),
+          'meta' => [
+            'orderQuantity' => 1,
+          ],
+        ],
+      ],
+    ]));
 
     $this->setExpectedException(UnprocessableEntityHttpException::class, "The given entity can't be purchased from the current store.");
 
     $controller = $this->getController();
-    $controller->post([
-      [
-        'purchased_entity_type' => 'commerce_product_variation',
-        'purchased_entity_id' => $product_variation->id(),
-        'quantity' => 1,
-      ],
-    ], $request->reveal());
+    $controller->addItems($request->reveal());
   }
 
   /**
    * Gets the controller to test.
    *
-   * @return \Drupal\commerce_cart_api\Plugin\rest\resource\CartAddResource
+   * @return \Drupal\commerce_cart_api\Controller\CartResourceController
    *   The controller.
    */
   protected function getController() {
-    return new CartAddResource(
-      [],
-      'cart_add_resource',
-      [],
-      ['json'],
-      $this->container->get('logger.channel.default'),
+    return new CartResourceController(
+      $this->container->get('jsonapi_resource.resource_response_factory'),
+      $this->container->get('jsonapi.resource_type.repository'),
+      $this->container->get('entity_type.manager'),
       $this->container->get('commerce_cart.cart_provider'),
       $this->container->get('commerce_cart.cart_manager'),
-      $this->container->get('entity_type.manager'),
-      $this->container->get('commerce_order.chain_order_type_resolver'),
-      $this->container->get('commerce_store.current_store'),
-      $this->container->get('commerce_price.chain_price_resolver'),
-      $this->container->get('current_user')
+      $this->container->get('commerce_cart_api.jsonapi_controller_shim')
     );
   }
 

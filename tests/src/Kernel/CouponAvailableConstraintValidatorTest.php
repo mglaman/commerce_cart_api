@@ -24,6 +24,8 @@ class CouponAvailableConstraintValidatorTest extends CommerceKernelTestBase {
    * @var array
    */
   public static $modules = [
+    'serialization',
+    'jsonapi',
     'entity_reference_revisions',
     'profile',
     'state_machine',

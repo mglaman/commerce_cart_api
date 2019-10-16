@@ -81,31 +81,15 @@ class Routes implements ContainerInjectionInterface {
     $routes->add('commerce_cart_api.jsonapi.cart_clear', $this->cartClear());
     $routes->add('commerce_cart_api.jsonapi.cart_add', $this->cartAdd());
 
-    // Ensure JSON API prefix.
-    $routes->addPrefix($this->jsonApiBasePath);
-
     // All routes must pass _cart_api access check.
     $routes->addRequirements(['_cart_api' => 'TRUE']);
-
-    // Require the JSON:API media type header on every route, except on file
-    // upload routes, where we require `application/octet-stream`.
-    $routes->addRequirements(['_content_type_format' => 'api_json']);
-
-    // Enable all available authentication providers.
-    $routes->addOptions(['_auth' => $this->providerIds]);
-
-    // Flag every route as belonging to the JSON:API module.
-    $routes->addDefaults([JsonapiRoutes::JSON_API_ROUTE_FLAG_KEY => TRUE]);
-
-    // All routes serve only the JSON:API media type.
-    $routes->addRequirements(['_format' => 'api_json']);
 
     return $routes;
   }
 
   protected function cartsCollection() {
     $collection_route = new Route('/cart');
-    $collection_route->addDefaults([RouteObjectInterface::CONTROLLER_NAME => CartResourceController::class . ':getCarts']);
+    $collection_route->addDefaults(['_jsonapi_resource' => CartResourceController::class . ':getCarts']);
     $collection_route->setMethods(['GET']);
     $collection_route->setRequirement('_access', 'TRUE');
     return $collection_route;
@@ -113,7 +97,7 @@ class Routes implements ContainerInjectionInterface {
 
   protected function cartsCanonical() {
     $collection_route = new Route('/cart/{commerce_order}');
-    $collection_route->addDefaults([RouteObjectInterface::CONTROLLER_NAME => CartResourceController::class . ':getCart']);
+    $collection_route->addDefaults(['_jsonapi_resource' => CartResourceController::class . ':getCart']);
     $collection_route->setMethods(['GET']);
     $collection_route->setRequirement('_access', 'TRUE');
     $parameters = $collection_route->getOption('parameters') ?: [];
@@ -124,7 +108,7 @@ class Routes implements ContainerInjectionInterface {
 
   protected function cartClear() {
     $collection_route = new Route('/cart/{commerce_order}/items');
-    $collection_route->addDefaults([RouteObjectInterface::CONTROLLER_NAME => CartResourceController::class . ':clearItems']);
+    $collection_route->addDefaults(['_jsonapi_resource' => CartResourceController::class . ':clearItems']);
     $collection_route->setMethods(['DELETE']);
     $parameters = $collection_route->getOption('parameters') ?: [];
     $parameters['commerce_order']['type'] = 'entity:commerce_order';
@@ -134,7 +118,7 @@ class Routes implements ContainerInjectionInterface {
 
   protected function cartAdd() {
     $collection_route = new Route('/cart/add');
-    $collection_route->addDefaults([RouteObjectInterface::CONTROLLER_NAME => CartResourceController::class . ':addItems']);
+    $collection_route->addDefaults(['_jsonapi_resource' => CartResourceController::class . ':addItems']);
     $collection_route->setMethods(['POST']);
     return $collection_route;
   }

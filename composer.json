@@ -11,7 +11,8 @@
     "source": "http://cgit.drupalcode.org/commerce_cart_api"
   },
   "require": {
-      "drupal/commerce": "^2.13",
+      "drupal/commerce": "^2.14",
+      "drupal/jsonapi_resources": "1.x-dev",
       "drupal/core": "^8.7"
   }
 }
