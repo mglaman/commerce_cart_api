@@ -25,6 +25,8 @@ use Drupal\jsonapi\JsonApiResource\ResourceObject;
 use Drupal\jsonapi\JsonApiResource\ResourceObjectData;
 use Drupal\jsonapi\ResourceResponse;
 use Drupal\jsonapi\ResourceType\ResourceType;
+use Drupal\jsonapi\ResourceType\ResourceTypeField;
+use Drupal\jsonapi\ResourceType\ResourceTypeRelationship;
 use Drupal\jsonapi\ResourceType\ResourceTypeRepositoryInterface;
 use Drupal\jsonapi_resources\Resource\EntityResourceBase;
 use Drupal\jsonapi_resources\ResourceResponseFactory;
@@ -125,6 +127,7 @@ class CartResourceController extends EntityResourceBase {
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   public function getCarts(Request $request): ResourceResponse {
+    $this->fixInclude($request);
     $carts = $this->cartProvider->getCarts();
     $primary_data = new ResourceObjectData(array_map(function (OrderInterface $cart) {
       return $this->getResourceObjectForEntity($cart);
@@ -161,21 +164,28 @@ class CartResourceController extends EntityResourceBase {
   /**
    * Clear a cart's items.
    *
-   * @param \Drupal\commerce_order\Entity\OrderInterface $cart
+   * @param \Drupal\commerce_order\Entity\OrderInterface $commerce_order
    *   The cart.
    *
    * @return \Drupal\jsonapi\ResourceResponse
    *   The response.
    */
-  public function clearItems(OrderInterface $cart): ResourceResponse {
-    $this->cartManager->emptyCart($cart);
+  public function clearItems(OrderInterface $commerce_order): ResourceResponse {
+    $this->cartManager->emptyCart($commerce_order);
     return new ResourceResponse(NULL, 204);
   }
 
   public function addItems(Request $request, array $_purchasable_entity_resource_types = []): ResourceResponse {
     // @todo `default` may not exist. Order items are not a based field, yet.
     // @todo once `items` is a base field, change to "virtual".
-    $resource_type = new ResourceType('commerce_order', 'default', EntityInterface::class);
+    // @see https://www.drupal.org/project/commerce/issues/3002939
+    $resource_type = new ResourceType('commerce_order', 'default', EntityInterface::class, FALSE, TRUE, FALSE, FALSE,
+      [
+        'order_items' => new ResourceTypeRelationship('order_items', 'order_items', TRUE, FALSE),
+      ]
+    );
+
+    assert($resource_type->getInternalName('order_items') === 'order_items');
 
     /* @var \Drupal\jsonapi\ResourceType\ResourceType[] $purchasable_resource_types */
     $purchasable_resource_types = array_map(function ($resource_type_name) {

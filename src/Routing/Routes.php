@@ -8,6 +8,7 @@ use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\jsonapi\ResourceType\ResourceType;
 use Drupal\jsonapi\ResourceType\ResourceTypeRepositoryInterface;
+use Drupal\jsonapi\Routing\Routes as JsonapiRoutes;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCollection;
@@ -88,6 +89,8 @@ class Routes implements ContainerInjectionInterface {
 
     // All routes must pass _cart_api access check.
     $routes->addRequirements(['_cart_api' => 'TRUE']);
+    // Set a fake resource type so entity UUID parameter conversion works.
+    $routes->addDefaults([JsonapiRoutes::RESOURCE_TYPE_KEY => 'commerce_order--commerce_order']);
 
     return $routes;
   }
@@ -150,6 +153,7 @@ class Routes implements ContainerInjectionInterface {
     $collection_route->setOption('parameters', $parameters);
     return $collection_route;
   }
+
   protected function cartUpdateItem() {
     $collection_route = new Route('/cart/{commerce_order}/items/{commerce_order_item}');
     $collection_route->addDefaults(['_jsonapi_resource' => CartResourceController::class . ':updateItem']);

@@ -61,7 +61,7 @@ final class CartAddResourceTest extends CommerceKernelTestBase {
   /**
    * Tests exception when a non-purchasable entity provided.
    */
-  public function testNonPurchasableEntityTypoe() {
+  public function testNonPurchasableEntityType() {
     $entity = EntityTest::create(['id' => 1, 'type' => 'entity_test']);
     $entity->save();
 
@@ -78,7 +78,8 @@ final class CartAddResourceTest extends CommerceKernelTestBase {
       ],
     ]));
 
-    $this->setExpectedException(BadRequestHttpException::class, 'The provided type (entity_test--entity_test) does not mach the destination resource types (commerce_product_variation--default).');
+    $this->expectException(BadRequestHttpException::class);
+    $this->expectExceptionMessage('The provided type (entity_test--entity_test) does not mach the destination resource types (commerce_product_variation--default).');
 
     $controller = $this->getController();
     $controller->addItems($request->reveal(), ['commerce_product_variation--default']);
@@ -113,7 +114,8 @@ final class CartAddResourceTest extends CommerceKernelTestBase {
       ],
     ]));
 
-    $this->setExpectedException(UnprocessableEntityHttpException::class, 'The given entity is not assigned to any store.');
+    $this->expectException(UnprocessableEntityHttpException::class);
+    $this->expectExceptionMessage('The given entity is not assigned to any store.');
 
     $controller = $this->getController();
     $controller->addItems($request->reveal(), ['commerce_product_variation--default']);
@@ -151,7 +153,8 @@ final class CartAddResourceTest extends CommerceKernelTestBase {
       ],
     ]));
 
-    $this->setExpectedException(UnprocessableEntityHttpException::class, "The given entity can't be purchased from the current store.");
+    $this->expectException(UnprocessableEntityHttpException::class);
+    $this->expectExceptionMessage("The given entity can't be purchased from the current store.");
 
     $controller = $this->getController();
     $controller->addItems($request->reveal(), ['commerce_product_variation--default']);

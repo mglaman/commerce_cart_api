@@ -3,8 +3,10 @@
 namespace Drupal\Tests\commerce_cart_api\Functional\jsonapi;
 
 use Drupal\commerce_store\StoreCreationTrait;
+use Drupal\Component\Serialization\Json;
 use Drupal\Tests\BrowserTestBase;
 use Drupal\Tests\jsonapi\Functional\JsonApiRequestTestTrait;
+use Psr\Http\Message\ResponseInterface;
 
 abstract  class CartResourceTestBase extends BrowserTestBase {
 
@@ -55,6 +57,7 @@ abstract  class CartResourceTestBase extends BrowserTestBase {
 
   protected static $modules = [
     'basic_auth',
+    'jsonapi_resources',
     'commerce_cart_api',
   ];
 
@@ -102,6 +105,8 @@ abstract  class CartResourceTestBase extends BrowserTestBase {
     // as expected.
     $this->account = $this->createUser();
     $this->container->get('current_user')->setAccount($this->account);
+
+    $this->config('jsonapi.settings')->set('read_only', FALSE)->save(TRUE);
   }
 
   /**
@@ -118,7 +123,7 @@ abstract  class CartResourceTestBase extends BrowserTestBase {
    */
   protected function createEntity($entity_type, array $values) {
     /** @var \Drupal\Core\Entity\EntityStorageInterface $storage */
-    $storage = \Drupal::service('entity_type.manager')->getStorage($entity_type);
+    $storage = $this->container->get('entity_type.manager')->getStorage($entity_type);
     $entity = $storage->create($values);
     $status = $entity->save();
     // The newly saved entity isn't identical to a loaded one, and would fail
@@ -142,6 +147,10 @@ abstract  class CartResourceTestBase extends BrowserTestBase {
         'Authorization' => 'Basic ' . base64_encode($this->account->name->value . ':' . $this->account->passRaw),
       ],
     ];
+  }
+
+  protected function assertResponseCode($expected_status_code, ResponseInterface $response) {
+    $this->assertSame($expected_status_code, $response->getStatusCode(), var_export(Json::decode((string) $response->getBody()), TRUE));
   }
 
 }
