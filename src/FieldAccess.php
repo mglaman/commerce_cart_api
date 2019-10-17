@@ -39,27 +39,17 @@ class FieldAccess implements FieldAccessInterface {
     }
 
     $entity_type_id = $field_definition->getTargetEntityTypeId();
-    $method = 'allowed' . Container::camelize("{$entity_type_id}_fields");
+    $method = 'check' . Container::camelize("{$entity_type_id}_field_access");
 
+
+    $result = AccessResult::neutral();
     if (method_exists($this, $method)) {
-      $allowed_fields = $this->{$method}($operation, $field_definition, $account, $items) ?: [];
-      return AccessResult::forbiddenIf(!in_array($field_definition->getName(), $allowed_fields, TRUE));
-    }
-    if ($operation === 'view') {
-      // Disallow access to generic entity fields for any other entity which
-      // has been normalized and being returns (like purchasable entities.)
-      $disallowed_fields = [
-        'created',
-        'changed',
-        'default_langcode',
-        'langcode',
-        'status',
-        'uid',
-      ];
-      return AccessResult::forbiddenIf(in_array($field_definition->getName(), $disallowed_fields, TRUE));
+      $result = $this->{$method}($operation, $field_definition, $account, $items) ?: AccessResult::neutral();
+    } else {
+      throw new \RuntimeException($method);
     }
 
-    return AccessResult::neutral();
+    return $result;
   }
 
   /**
@@ -76,25 +66,21 @@ class FieldAccess implements FieldAccessInterface {
    *   access is checked for the field definition, without any specific value
    *   available. Defaults to NULL.
    *
-   * @return array
+   * @return \Drupal\Core\Access\AccessResultInterface
    *   The allowed fields.
    */
-  protected function allowedCommerceOrderFields($operation, FieldDefinitionInterface $field_definition, AccountInterface $account, FieldItemListInterface $items = NULL) {
-    if ($operation === 'view') {
-      return [
-        'order_id',
-        'uuid',
+  protected function checkCommerceOrderFieldAccess($operation, FieldDefinitionInterface $field_definition, AccountInterface $account, FieldItemListInterface $items = NULL) {
+    if ($operation === 'edit') {
+      $disallowed = [
         'order_number',
         'store_id',
-        // Allow after https://www.drupal.org/project/commerce/issues/2916252.
-        // 'adjustments',
+        'adjustments',
         'coupons',
         'order_total',
         'total_price',
-        'order_items',
       ];
+      return AccessResult::forbiddenIf(in_array($field_definition->getName(), $disallowed, TRUE));
     }
-    return [];
   }
 
   /**
@@ -111,26 +97,21 @@ class FieldAccess implements FieldAccessInterface {
    *   access is checked for the field definition, without any specific value
    *   available. Defaults to NULL.
    *
-   * @return array
+   * @return \Drupal\Core\Access\AccessResultInterface
    *   The allowed fields.
    */
-  protected function allowedCommerceOrderItemFields($operation, FieldDefinitionInterface $field_definition, AccountInterface $account, FieldItemListInterface $items = NULL) {
-    if ($operation === 'view') {
-      return [
-        'order_id',
-        'order_item_id',
-        'uuid',
+  protected function checkCommerceOrderItemFieldAccess($operation, FieldDefinitionInterface $field_definition, AccountInterface $account, FieldItemListInterface $items = NULL) {
+    if ($operation === 'edit') {
+      $disallowed = [
         'purchased_entity',
         'title',
-        // Allow after https://www.drupal.org/project/commerce/issues/2916252.
-        // 'adjustments',
-        'quantity',
-        'order_total',
+        'adjustments',
+//        'quantity',
         'unit_price',
         'total_price',
       ];
+      return AccessResult::forbiddenIf(in_array($field_definition->getName(), $disallowed, TRUE));
     }
-    return [];
   }
 
 }

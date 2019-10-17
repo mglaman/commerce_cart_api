@@ -8,10 +8,18 @@ use Drupal\commerce_cart\CartProviderInterface;
 use Drupal\commerce_cart\CartSessionInterface;
 use Drupal\commerce_cart_api\Controller\jsonapi\EntityResourceShim;
 use Drupal\commerce_order\Entity\OrderInterface;
+use Drupal\commerce_order\Entity\OrderItemInterface;
 use Drupal\commerce_order\OrderItemStorageInterface;
+use Drupal\commerce_store\Entity\Store;
+use Drupal\commerce_store\Entity\StoreInterface;
+use Drupal\Component\Serialization\Json;
+use Drupal\Core\Access\AccessResult;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Render\RenderContext;
+use Drupal\jsonapi\Entity\EntityValidationTrait;
+use Drupal\jsonapi\Exception\EntityAccessDeniedHttpException;
+use Drupal\jsonapi\JsonApiResource\JsonApiDocumentTopLevel;
 use Drupal\jsonapi\JsonApiResource\ResourceIdentifier;
 use Drupal\jsonapi\JsonApiResource\ResourceObject;
 use Drupal\jsonapi\JsonApiResource\ResourceObjectData;
@@ -20,17 +28,21 @@ use Drupal\jsonapi\ResourceType\ResourceType;
 use Drupal\jsonapi\ResourceType\ResourceTypeRepositoryInterface;
 use Drupal\jsonapi_resources\Resource\EntityResourceBase;
 use Drupal\jsonapi_resources\ResourceResponseFactory;
+use Drupal\rest\ModifiedResourceResponse;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\commerce_cart\CartManager;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
  * Class CartResourceController.
  */
-class CartResourceController extends EntityResourceBase  {
+class CartResourceController extends EntityResourceBase {
+
+  use EntityValidationTrait;
 
   /**
    * Drupal\commerce_cart\CartProvider definition.
@@ -160,13 +172,16 @@ class CartResourceController extends EntityResourceBase  {
     return new ResourceResponse(NULL, 204);
   }
 
-  public function addItems(Request $request): ResourceResponse {
+  public function addItems(Request $request, array $_purchasable_entity_resource_types = []): ResourceResponse {
     // @todo `default` may not exist. Order items are not a based field, yet.
     // @todo once `items` is a base field, change to "virtual".
     $resource_type = new ResourceType('commerce_order', 'default', EntityInterface::class);
-    // @todo: ensure that this is *actually* only purchasable entity types.
+
     /* @var \Drupal\jsonapi\ResourceType\ResourceType[] $purchasable_resource_types */
-    $purchasable_resource_types = $this->resourceTypeRepository->all();
+    $purchasable_resource_types = array_map(function ($resource_type_name) {
+      return $this->resourceTypeRepository->getByTypeName($resource_type_name);
+    }, $_purchasable_entity_resource_types);
+
     $resource_type->setRelatableResourceTypes(['order_items' => $purchasable_resource_types]);
     /* @var \Drupal\jsonapi\JsonApiResource\ResourceIdentifier[] $resource_identifiers */
     $resource_identifiers = $this->inner->deserialize($resource_type, $request, ResourceIdentifier::class, 'order_items');
@@ -174,8 +189,6 @@ class CartResourceController extends EntityResourceBase  {
     $renderer = \Drupal::getContainer()->get('renderer');
     $context = new RenderContext();
     $order_items = $renderer->executeInRenderContext($context, function () use ($resource_identifiers) {
-      $order_item_storage = $this->entityTypeManager->getStorage('commerce_order_item');
-      assert($order_item_storage instanceof OrderItemStorageInterface);
       $order_items = [];
       foreach ($resource_identifiers as $resource_identifier) {
         $purchased_entity = $this->entityRepository->loadEntityByUuid(
@@ -183,19 +196,13 @@ class CartResourceController extends EntityResourceBase  {
           $resource_identifier->getId()
         );
         if (!$purchased_entity || !$purchased_entity instanceof PurchasableEntityInterface) {
-          continue;
+          throw new UnprocessableEntityHttpException(sprintf('The purchasable entity %s does not exist.', $resource_identifier->getId()));
         }
         $store = $this->selectStore($purchased_entity);
         $quantity = ($meta = ($resource_identifier->getMeta() && isset($meta['orderQuantity']))) ? $meta['orderQuantity'] : 1;
-        $order_item = $order_item_storage->createFromPurchasableEntity($purchased_entity, ['quantity' => $quantity]);
-        $context = new Context($this->currentUser, $store);
-        $order_item->setUnitPrice($this->chainPriceResolver->resolve($purchased_entity, $order_item->getQuantity(), $context));
+        $order_item = $this->createOrderItemFromPurchasableEntity($store, $purchased_entity, $quantity);
 
-        $order_type_id = $this->chainOrderTypeResolver->resolve($order_item);
-        $cart = $this->cartProvider->getCart($order_type_id, $store);
-        if (!$cart) {
-          $cart = $this->cartProvider->createCart($order_type_id, $store);
-        }
+        $cart = $this->getCartForOrderItem($order_item, $store);
 
         $order_item = $this->cartManager->addOrderItem($cart, $order_item);
         $order_items[] = $this->getResourceObjectForEntity($order_item);
@@ -205,6 +212,114 @@ class CartResourceController extends EntityResourceBase  {
 
     $primary_data = new ResourceObjectData($order_items);
     return $this->resourceResponseFactory->create($primary_data, $request);
+  }
+
+  /**
+   * DELETE an order item from a cart.
+   *
+   * @param \Drupal\commerce_order\Entity\OrderInterface $commerce_order
+   *   The order.
+   * @param \Drupal\commerce_order\Entity\OrderItemInterface $commerce_order_item
+   *   The order item.
+   *
+   * @return \Drupal\jsonapi\ResourceResponse
+   *   The response.
+   */
+  public function removeItem(OrderInterface $commerce_order, OrderItemInterface $commerce_order_item) {
+    $this->cartManager->removeOrderItem($commerce_order, $commerce_order_item);
+    return new ResourceResponse(NULL, 204);
+  }
+
+  /**
+   * Update an order item from a cart.
+   *
+   * @param \Symfony\Component\HttpFoundation\Request $request
+   *   The request.
+   * @param \Drupal\commerce_order\Entity\OrderInterface $commerce_order
+   *   The order.
+   * @param \Drupal\commerce_order\Entity\OrderItemInterface $commerce_order_item
+   *   The order item.
+   *
+   * @return \Drupal\jsonapi\ResourceResponse
+   *   The response.
+   */
+  public function updateItem(Request $request, OrderInterface $commerce_order, OrderItemInterface $commerce_order_item) {
+    $resource_type = $this->resourceTypeRepository->get($commerce_order_item->getEntityTypeId(), $commerce_order_item->bundle());
+    $parsed_entity = $this->inner->deserialize($resource_type, $request, JsonApiDocumentTopLevel::class);
+    assert($parsed_entity instanceof OrderItemInterface);
+
+    $body = Json::decode($request->getContent());
+    $data = $body['data'];
+    if ($data['id'] !== $commerce_order_item->uuid()) {
+      throw new BadRequestHttpException(sprintf('The selected entity (%s) does not match the ID in the payload (%s).', $commerce_order_item->uuid(), $data['id']));
+    }
+    $data += ['attributes' => [], 'relationships' => []];
+    $data_field_names = array_merge(array_keys($data['attributes']), array_keys($data['relationships']));
+
+    foreach ($data_field_names as $data_field_name) {
+      $field_name = $resource_type->getInternalName($data_field_name);
+
+      $parsed_field_item = $parsed_entity->get($field_name);
+      $original_field_item = $commerce_order_item->get($field_name);
+      if ($this->inner->checkPatchFieldAccess($parsed_field_item, $original_field_item)) {
+        $commerce_order_item->set($field_name, $parsed_field_item->getValue());
+      }
+    }
+
+    static::validate($commerce_order_item, ['quantity']);
+
+    $commerce_order_item->save();
+    $commerce_order->setRefreshState(OrderInterface::REFRESH_ON_SAVE);
+    $commerce_order->save();
+
+    $resource_object = $this->getResourceObjectForEntity($commerce_order);
+    $primary_data = new ResourceObjectData([$resource_object], 1);
+    return $this->resourceResponseFactory->create($primary_data, $request);
+  }
+
+  /**
+   * Creates an order item from the purchased entity.
+   *
+   * @param \Drupal\commerce_store\Entity\StoreInterface $store
+   *   The store.
+   * @param \Drupal\commerce\PurchasableEntityInterface $purchased_entity
+   *   The purchased entity.
+   * @param int $quantity
+   *   THe quantity.
+   *
+   * @return \Drupal\commerce_order\Entity\OrderItemInterface
+   *   The order item.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   */
+  private function createOrderItemFromPurchasableEntity(StoreInterface $store, PurchasableEntityInterface $purchased_entity, $quantity) {
+    $order_item_storage = $this->entityTypeManager->getStorage('commerce_order_item');
+    assert($order_item_storage instanceof OrderItemStorageInterface);
+    $order_item = $order_item_storage->createFromPurchasableEntity($purchased_entity, ['quantity' => $quantity]);
+    $context = new Context($this->currentUser, $store);
+    $order_item->setUnitPrice($this->chainPriceResolver->resolve($purchased_entity, $order_item->getQuantity(), $context));
+    return $order_item;
+  }
+
+  /**
+   * Gets the proper cart for a order item in the user's session.
+   *
+   * @param \Drupal\commerce_order\Entity\OrderItemInterface $order_item
+   *   The order item.
+   * @param \Drupal\commerce_store\Entity\StoreInterface $store
+   *   The store.
+   *
+   * @return \Drupal\commerce_order\Entity\OrderInterface
+   *   The cart.
+   */
+  private function getCartForOrderItem(OrderItemInterface $order_item, StoreInterface $store) {
+    $order_type_id = $this->chainOrderTypeResolver->resolve($order_item);
+    $cart = $this->cartProvider->getCart($order_type_id, $store);
+    if (!$cart) {
+      $cart = $this->cartProvider->createCart($order_type_id, $store);
+    }
+    return $cart;
   }
 
   /**
@@ -223,7 +338,7 @@ class CartResourceController extends EntityResourceBase  {
    * @return \Drupal\commerce_store\Entity\StoreInterface
    *   The selected store.
    */
-  protected function selectStore(PurchasableEntityInterface $entity) {
+  private function selectStore(PurchasableEntityInterface $entity) {
     $stores = $entity->getStores();
     if (count($stores) === 1) {
       $store = reset($stores);
@@ -253,7 +368,7 @@ class CartResourceController extends EntityResourceBase  {
    *
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  protected function fixInclude(Request $request) {
+  private function fixInclude(Request $request) {
     $include = $request->query->get('include');
     $request->query->set('include', $include . (empty($include) ? '' : ',') . 'order_items,order_items.purchased_entity');
   }
