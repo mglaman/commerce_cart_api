@@ -219,10 +219,6 @@ final class CartUpdateItemResourceTest extends CartResourceTestBase {
           'title' => 'Unprocessable Entity',
           'status' => '422',
           'detail' => 'quantity.0.value: Quantity: the value may be no less than 0.',
-          'links' => [
-            'info' => ['href' => HttpExceptionNormalizer::getInfoUrl(422)],
-            'via' => ['href' => $url->setAbsolute()->toString()],
-          ],
           'source' => [
             'pointer' => '/data/attributes/quantity/value'
           ],
