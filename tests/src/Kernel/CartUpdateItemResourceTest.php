@@ -3,6 +3,7 @@
 namespace Drupal\Tests\commerce_cart_api\Kernel;
 
 use Drupal\commerce_cart_api\Controller\CartResourceController;
+use Drupal\commerce_cart_api\Resource\CartUpdateItemResource;
 use Drupal\commerce_order\Entity\Order;
 use Drupal\commerce_order\Entity\OrderItem;
 use Drupal\commerce_price\Price;
@@ -12,6 +13,7 @@ use Drupal\Component\Serialization\Json;
 use Drupal\Core\Entity\Entity\EntityFormMode;
 use Drupal\entity_test\Entity\EntityTest;
 use Drupal\jsonapi\Exception\EntityAccessDeniedHttpException;
+use Drupal\jsonapi\Exception\UnprocessableHttpEntityException;
 use Drupal\jsonapi\JsonApiResource\JsonApiDocumentTopLevel;
 use Drupal\jsonapi\JsonApiResource\ResourceObject;
 use Drupal\Tests\commerce\Kernel\CommerceKernelTestBase;
@@ -132,7 +134,7 @@ final class CartUpdateItemResourceTest extends CommerceKernelTestBase {
       }
     }
 
-    $controller->updateItem($request, $order, $order_item);
+    $controller->process($request, $order, $order_item);
   }
 
   public function dataUpdateItemAttributes() {
@@ -142,6 +144,15 @@ final class CartUpdateItemResourceTest extends CommerceKernelTestBase {
           'quantity' => 10,
         ],
       ],
+    ];
+    yield [
+      [
+        'attributes' => [
+          'quantity' => -1,
+        ],
+      ],
+      UnprocessableHttpEntityException::class,
+      'Unprocessable Entity: validation failed.',
     ];
     yield [
       [
@@ -162,14 +173,15 @@ final class CartUpdateItemResourceTest extends CommerceKernelTestBase {
   /**
    * Gets the controller to test.
    *
-   * @return \Drupal\commerce_cart_api\Controller\CartResourceController
+   * @return \Drupal\commerce_cart_api\Resource\CartUpdateItemResource
    *   The controller.
    */
   protected function getController() {
-    return new CartResourceController(
-      $this->container->get('jsonapi_resource.resource_response_factory'),
+    return new CartUpdateItemResource(
+      $this->container->get('jsonapi_resources.resource_response_factory'),
       $this->container->get('jsonapi.resource_type.repository'),
       $this->container->get('entity_type.manager'),
+      $this->container->get('jsonapi_resources.entity_access_checker'),
       $this->container->get('commerce_cart.cart_provider'),
       $this->container->get('commerce_cart.cart_manager'),
       $this->container->get('commerce_cart_api.jsonapi_controller_shim')

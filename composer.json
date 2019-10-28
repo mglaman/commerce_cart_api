@@ -13,6 +13,6 @@
   "require": {
       "drupal/commerce": "^2.14",
       "drupal/jsonapi_resources": "1.x-dev",
-      "drupal/core": "^8.7"
+      "drupal/core": "^8.8@alpha"
   }
 }

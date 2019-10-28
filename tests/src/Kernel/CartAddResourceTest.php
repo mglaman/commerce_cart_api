@@ -3,6 +3,7 @@
 namespace Drupal\Tests\commerce_cart_api\Kernel;
 
 use Drupal\commerce_cart_api\Controller\CartResourceController;
+use Drupal\commerce_cart_api\Resource\CartAddResource;
 use Drupal\commerce_price\Price;
 use Drupal\commerce_product\Entity\Product;
 use Drupal\commerce_product\Entity\ProductVariation;
@@ -82,7 +83,7 @@ final class CartAddResourceTest extends CommerceKernelTestBase {
     $this->expectExceptionMessage('The provided type (entity_test--entity_test) does not mach the destination resource types (commerce_product_variation--default).');
 
     $controller = $this->getController();
-    $controller->addItems($request->reveal(), ['commerce_product_variation--default']);
+    $controller->process($request->reveal(), ['commerce_product_variation--default']);
   }
 
   /**
@@ -118,7 +119,7 @@ final class CartAddResourceTest extends CommerceKernelTestBase {
     $this->expectExceptionMessage('The given entity is not assigned to any store.');
 
     $controller = $this->getController();
-    $controller->addItems($request->reveal(), ['commerce_product_variation--default']);
+    $controller->process($request->reveal(), ['commerce_product_variation--default']);
   }
 
   /**
@@ -157,7 +158,7 @@ final class CartAddResourceTest extends CommerceKernelTestBase {
     $this->expectExceptionMessage("The given entity can't be purchased from the current store.");
 
     $controller = $this->getController();
-    $controller->addItems($request->reveal(), ['commerce_product_variation--default']);
+    $controller->process($request->reveal(), ['commerce_product_variation--default']);
   }
 
   /**
@@ -193,7 +194,7 @@ final class CartAddResourceTest extends CommerceKernelTestBase {
     ]));
 
     $controller = $this->getController();
-    $response = $controller->addItems($request, ['commerce_product_variation--default']);
+    $response = $controller->process($request, ['commerce_product_variation--default']);
     $this->assertInstanceOf(JsonApiDocumentTopLevel::class, $response->getResponseData());
     $resource_object = $response->getResponseData()->getData()->getIterator()->offsetGet(0);
     assert($resource_object instanceof ResourceObject);
@@ -205,14 +206,15 @@ final class CartAddResourceTest extends CommerceKernelTestBase {
   /**
    * Gets the controller to test.
    *
-   * @return \Drupal\commerce_cart_api\Controller\CartResourceController
+   * @return \Drupal\commerce_cart_api\Resource\CartAddResource
    *   The controller.
    */
   protected function getController() {
-    return new CartResourceController(
-      $this->container->get('jsonapi_resource.resource_response_factory'),
+    return new CartAddResource(
+      $this->container->get('jsonapi_resources.resource_response_factory'),
       $this->container->get('jsonapi.resource_type.repository'),
       $this->container->get('entity_type.manager'),
+      $this->container->get('jsonapi_resources.entity_access_checker'),
       $this->container->get('commerce_cart.cart_provider'),
       $this->container->get('commerce_cart.cart_manager'),
       $this->container->get('commerce_cart_api.jsonapi_controller_shim')

@@ -23,7 +23,21 @@ function commerce_cart_api_entity_field_access($operation, FieldDefinitionInterf
  * Implements hook_entity_base_field_info_alter().
  */
 function commerce_cart_api_entity_base_field_info_alter(&$fields, EntityTypeInterface $entity_type) {
+  /** @var \Drupal\Core\Field\BaseFieldDefinition[] $fields */
   if (isset($fields['coupons']) && ($entity_type->id() === 'commerce_order')) {
     $fields['coupons']->addConstraint('CouponValid');
+  }
+  // Drupal core doesn't properly add `min` constraints when the minimum value
+  // is zero.
+  // @todo remove after https://www.drupal.org/project/drupal/issues/3090629.
+  if ($entity_type->id() === 'commerce_order_item') {
+    $fields['quantity']->getItemDefinition()->addConstraint('ComplexData', [
+      'value' => [
+        'Range' => [
+          'min' => 0,
+          'minMessage' => t('%name: the value may be no less than %min.', ['%name' => $fields['quantity']->getLabel(), '%min' => 0]),
+        ],
+      ],
+    ]);
   }
 }

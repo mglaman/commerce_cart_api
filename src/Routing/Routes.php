@@ -4,6 +4,12 @@ namespace Drupal\commerce_cart_api\Routing;
 
 use Drupal\commerce\PurchasableEntityInterface;
 use Drupal\commerce_cart_api\Controller\CartResourceController;
+use Drupal\commerce_cart_api\Resource\CartAddResource;
+use Drupal\commerce_cart_api\Resource\CartCanonicalResource;
+use Drupal\commerce_cart_api\Resource\CartClearResource;
+use Drupal\commerce_cart_api\Resource\CartCollectionResource;
+use Drupal\commerce_cart_api\Resource\CartRemoveItemResource;
+use Drupal\commerce_cart_api\Resource\CartUpdateItemResource;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\jsonapi\ResourceType\ResourceType;
@@ -88,7 +94,11 @@ class Routes implements ContainerInjectionInterface {
     $routes->add('commerce_cart_api.jsonapi.cart_update_item', $this->cartUpdateItem());
 
     // All routes must pass _cart_api access check.
-    $routes->addRequirements(['_cart_api' => 'TRUE']);
+    $routes->addRequirements([
+      '_access' => 'TRUE',
+      '_cart_api' => 'TRUE',
+    ]);
+
     // Set a fake resource type so entity UUID parameter conversion works.
     $routes->addDefaults([JsonapiRoutes::RESOURCE_TYPE_KEY => 'commerce_order--commerce_order']);
 
@@ -97,17 +107,13 @@ class Routes implements ContainerInjectionInterface {
 
   protected function cartsCollection() {
     $collection_route = new Route('/cart');
-    $collection_route->addDefaults(['_jsonapi_resource' => CartResourceController::class . ':getCarts']);
-    $collection_route->setMethods(['GET']);
-    $collection_route->setRequirement('_access', 'TRUE');
+    $collection_route->addDefaults(['_jsonapi_resource' => CartCollectionResource::class]);
     return $collection_route;
   }
 
   protected function cartsCanonical() {
     $collection_route = new Route('/cart/{commerce_order}');
-    $collection_route->addDefaults(['_jsonapi_resource' => CartResourceController::class . ':getCart']);
-    $collection_route->setMethods(['GET']);
-    $collection_route->setRequirement('_access', 'TRUE');
+    $collection_route->addDefaults(['_jsonapi_resource' => CartCanonicalResource::class]);
     $parameters = $collection_route->getOption('parameters') ?: [];
     $parameters['commerce_order']['type'] = 'entity:commerce_order';
     $collection_route->setOption('parameters', $parameters);
@@ -116,7 +122,7 @@ class Routes implements ContainerInjectionInterface {
 
   protected function cartClear() {
     $collection_route = new Route('/cart/{commerce_order}/items');
-    $collection_route->addDefaults(['_jsonapi_resource' => CartResourceController::class . ':clearItems']);
+    $collection_route->addDefaults(['_jsonapi_resource' => CartClearResource::class]);
     $collection_route->setMethods(['DELETE']);
     $parameters = $collection_route->getOption('parameters') ?: [];
     $parameters['commerce_order']['type'] = 'entity:commerce_order';
@@ -135,7 +141,7 @@ class Routes implements ContainerInjectionInterface {
 
     $collection_route = new Route('/cart/add');
     $collection_route->addDefaults([
-      '_jsonapi_resource' => CartResourceController::class . ':addItems',
+      '_jsonapi_resource' => CartAddResource::class,
       '_purchasable_entity_resource_types' => $purchasble_entity_resource_types,
     ]);
     $collection_route->setMethods(['POST']);
@@ -145,7 +151,7 @@ class Routes implements ContainerInjectionInterface {
 
   protected function cartRemoveItem() {
     $collection_route = new Route('/cart/{commerce_order}/items/{commerce_order_item}');
-    $collection_route->addDefaults(['_jsonapi_resource' => CartResourceController::class . ':removeItem']);
+    $collection_route->addDefaults(['_jsonapi_resource' => CartRemoveItemResource::class]);
     $collection_route->setMethods(['DELETE']);
     $parameters = $collection_route->getOption('parameters') ?: [];
     $parameters['commerce_order']['type'] = 'entity:commerce_order';
@@ -156,7 +162,7 @@ class Routes implements ContainerInjectionInterface {
 
   protected function cartUpdateItem() {
     $collection_route = new Route('/cart/{commerce_order}/items/{commerce_order_item}');
-    $collection_route->addDefaults(['_jsonapi_resource' => CartResourceController::class . ':updateItem']);
+    $collection_route->addDefaults(['_jsonapi_resource' => CartUpdateItemResource::class]);
     $collection_route->setMethods(['PATCH']);
     $parameters = $collection_route->getOption('parameters') ?: [];
     $parameters['commerce_order']['type'] = 'entity:commerce_order';

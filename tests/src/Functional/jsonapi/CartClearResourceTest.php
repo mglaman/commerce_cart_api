@@ -98,7 +98,7 @@ final class CartClearResourceTest extends CartResourceTestBase {
     $this->assertSame(['application/vnd.api+json'], $response->getHeader('Content-Type'));
 
     $this->assertTrue($response->hasHeader('X-Drupal-Dynamic-Cache'));
-    $this->assertSame('MISS', $response->getHeader('X-Drupal-Dynamic-Cache')[0]);
+    $this->assertSame('UNCACHEABLE', $response->getHeader('X-Drupal-Dynamic-Cache')[0]);
     $this->assertSame(['commerce_order:1', 'http_response'], explode(' ', $response->getHeader('X-Drupal-Cache-Tags')[0]));
     $this->assertEquals([
       'data' => [

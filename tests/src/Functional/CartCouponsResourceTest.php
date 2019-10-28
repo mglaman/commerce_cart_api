@@ -80,7 +80,11 @@ class CartCouponsResourceTest extends CartResourceTestBase {
     $response = $this->request('PATCH', $url, $request_options);
     $this->assertResourceResponse(200, FALSE, $response);
     $response_body = Json::decode((string) $response->getBody());
-    $this->assertEquals([$coupon->id()], $response_body['coupons']);
+    $this->assertEquals([[
+      'target_id' => $coupon->id(),
+      'target_type' => 'commerce_promotion_coupon',
+      'target_uuid' => $coupon->uuid(),
+    ]], $response_body['coupons']);
 
     $order_storage = $this->container->get('entity_type.manager')->getStorage('commerce_order');
     $order_storage->resetCache();
