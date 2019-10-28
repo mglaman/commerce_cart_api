@@ -224,7 +224,7 @@ final class CartUpdateItemResourceTest extends CartResourceTestBase {
             'via' => ['href' => $url->setAbsolute()->toString()],
           ],
           'source' => [
-            'pointer' => '/data/attributes/quantity'
+            'pointer' => '/data/attributes/quantity/value'
           ],
         ]
       ],
