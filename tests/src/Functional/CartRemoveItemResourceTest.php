@@ -1,12 +1,13 @@
 <?php declare(strict_types=1);
 
-namespace Drupal\Tests\commerce_cart_api\Functional\jsonapi;
+namespace Drupal\Tests\commerce_cart_api\Functional;
 
 use Drupal\commerce_order\Entity\Order;
 use Drupal\commerce_order\Entity\OrderInterface;
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\Url;
 use Drupal\jsonapi\Normalizer\HttpExceptionNormalizer;
+use GuzzleHttp\RequestOptions;
 
 /**
  * @group commerce_cart_api
@@ -17,10 +18,8 @@ final class CartRemoveItemResourceTest extends CartResourceTestBase {
    * Test request to delete item from non-existent cart.
    */
   public function testNoCartRemoveItem() {
-    $url = Url::fromRoute(
-      'commerce_cart_api.jsonapi.cart_remove_item', [
+    $url = Url::fromRoute('commerce_cart_api.jsonapi.cart_remove_item', [
       'commerce_order' => '209c27eb-e5e4-47b3-b3fe-c7aa76dce92f',
-      'commerce_order_item' => '5e18c081-322f-4ca9-aaa7-973e07f77c57',
     ]);
     $response = $this->request('DELETE', $url, $this->getAuthenticationRequestOptions());
     $this->assertResponseCode(404, $response);
@@ -37,7 +36,7 @@ final class CartRemoveItemResourceTest extends CartResourceTestBase {
         [
           'title' => 'Not Found',
           'status' => '404',
-          'detail' => 'The "commerce_order" parameter was not converted for the path "/jsonapi/cart/{commerce_order}/items/{commerce_order_item}" (route name: "commerce_cart_api.jsonapi.cart_remove_item")',
+          'detail' => 'The "commerce_order" parameter was not converted for the path "/jsonapi/cart/{commerce_order}/items" (route name: "commerce_cart_api.jsonapi.cart_remove_item")',
           'links' => [
             'info' => ['href' => HttpExceptionNormalizer::getInfoUrl(404)],
             'via' => ['href' => $url->setAbsolute()->toString()],
@@ -52,6 +51,8 @@ final class CartRemoveItemResourceTest extends CartResourceTestBase {
    */
   public function testRemoveItem() {
     $request_options = $this->getAuthenticationRequestOptions();
+    $request_options[RequestOptions::HEADERS]['Accept'] = 'application/vnd.api+json';
+    $request_options[RequestOptions::HEADERS]['Content-Type'] = 'application/vnd.api+json';
 
     // Failed request to delete item from cart that doesn't belong to the account.
     $not_my_cart = $this->cartProvider->createCart('default', $this->store, $this->createUser());
@@ -61,10 +62,16 @@ final class CartRemoveItemResourceTest extends CartResourceTestBase {
     $items = $not_my_cart->getItems();
     $not_my_order_item = $items[0];
 
-    $url = Url::fromRoute(
-      'commerce_cart_api.jsonapi.cart_remove_item', [
+    $url = Url::fromRoute('commerce_cart_api.jsonapi.cart_remove_item', [
         'commerce_order' => $not_my_cart->uuid(),
-        'commerce_order_item' => $not_my_order_item->uuid(),
+    ]);
+    $request_options[RequestOptions::BODY] = Json::encode([
+      'data' => [
+        [
+          'type' => 'commerce_order_item--default',
+          'id' => $not_my_order_item->uuid(),
+        ]
+      ]
     ]);
     $response = $this->request('DELETE', $url, $request_options);
     $this->assertResponseCode(403, $response);
@@ -101,11 +108,17 @@ final class CartRemoveItemResourceTest extends CartResourceTestBase {
     // Request for order item that does not exist in the cart should fail.
     $url = Url::fromRoute('commerce_cart_api.jsonapi.cart_remove_item', [
       'commerce_order' => $cart->uuid(),
-      'commerce_order_item' => $not_my_order_item->uuid(),
     ]);
-
+    $request_options[RequestOptions::BODY] = Json::encode([
+      'data' => [
+        [
+          'type' => 'commerce_order_item--default',
+          'id' => $not_my_order_item->uuid(),
+        ]
+      ]
+    ]);
     $response = $this->request('DELETE', $url, $request_options);
-    $this->assertResponseCode(403, $response);
+    $this->assertResponseCode(422, $response);
     $this->assertEquals([
       'jsonapi' => [
         'version' => '1.0',
@@ -117,11 +130,10 @@ final class CartRemoveItemResourceTest extends CartResourceTestBase {
       ],
       'errors' => [
         [
-          'title' => 'Forbidden',
-          'status' => '403',
-          'detail' => 'Order item does not belong to this order.',
+          'title' => 'Unprocessable Entity',
+          'status' => '422',
+          'detail' => "Order item {$not_my_order_item->uuid()} does not exist for order {$cart->uuid()}.",
           'links' => [
-            'info' => ['href' => HttpExceptionNormalizer::getInfoUrl(403)],
             'via' => ['href' => $url->setAbsolute()->toString()],
           ],
         ],
@@ -138,9 +150,15 @@ final class CartRemoveItemResourceTest extends CartResourceTestBase {
     // Delete second order item from the cart.
     $url = Url::fromRoute('commerce_cart_api.jsonapi.cart_remove_item', [
       'commerce_order' => $cart->uuid(),
-      'commerce_order_item' => $order_item2->uuid(),
     ]);
-
+    $request_options[RequestOptions::BODY] = Json::encode([
+      'data' => [
+        [
+          'type' => 'commerce_order_item--default',
+          'id' => $order_item2->uuid(),
+        ]
+      ]
+    ]);
     $response = $this->request('DELETE', $url, $request_options);
     $this->assertResponseCode(204, $response);
     $this->assertEquals(NULL, (string) $response->getBody());
@@ -155,9 +173,15 @@ final class CartRemoveItemResourceTest extends CartResourceTestBase {
     // Delete remaining order item from the cart.
     $url = Url::fromRoute('commerce_cart_api.jsonapi.cart_remove_item', [
       'commerce_order' => $cart->uuid(),
-      'commerce_order_item' => $remaining_order_item->uuid(),
     ]);
-
+    $request_options[RequestOptions::BODY] = Json::encode([
+      'data' => [
+        [
+          'type' => 'commerce_order_item--default',
+          'id' => $remaining_order_item->uuid(),
+        ]
+      ]
+    ]);
     $response = $this->request('DELETE', $url, $request_options);
     $this->assertResponseCode(204, $response);
     $this->assertEquals(NULL, (string) $response->getBody());

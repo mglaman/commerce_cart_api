@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Drupal\Tests\commerce_cart_api\Functional\jsonapi;
+namespace Drupal\Tests\commerce_cart_api\Functional;
 
 use Drupal\commerce_product\Entity\ProductVariationType;
 use Drupal\Component\Serialization\Json;

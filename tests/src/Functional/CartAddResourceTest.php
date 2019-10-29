@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\Tests\commerce_cart_api\Functional\jsonapi;
+namespace Drupal\Tests\commerce_cart_api\Functional;
 
 use Drupal\commerce_order\Entity\OrderInterface;
 use Drupal\Component\Serialization\Json;

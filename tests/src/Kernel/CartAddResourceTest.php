@@ -20,44 +20,7 @@ use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 /**
  * @group commerce_cart_api
  */
-final class CartAddResourceTest extends CommerceKernelTestBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public static $modules = [
-    'serialization',
-    'jsonapi',
-    'jsonapi_resources',
-    'entity_reference_revisions',
-    'profile',
-    'state_machine',
-    'commerce_order',
-    'path',
-    'commerce_product',
-    'commerce_cart',
-    'commerce_cart_api',
-  ];
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp() {
-    parent::setUp();
-    $this->installEntitySchema('commerce_order');
-    $this->installEntitySchema('commerce_order_item');
-    $this->installEntitySchema('commerce_product');
-    $this->installEntitySchema('commerce_product_variation');
-    EntityFormMode::create([
-      'id' => 'commerce_order_item.add_to_cart',
-      'label' => 'Add to cart',
-      'targetEntityType' => 'commerce_order_item',
-    ])->save();
-    $this->installConfig([
-      'commerce_product',
-      'commerce_order',
-    ]);
-  }
+final class CartAddResourceTest extends CartResourceKernelTestBase {
 
   /**
    * Tests exception when a non-purchasable entity provided.
@@ -227,6 +190,43 @@ final class CartAddResourceTest extends CommerceKernelTestBase {
     $this->assertEquals(2, $resource_object->getField('quantity')->value);
     $resource_object = $response->getResponseData()->getData()->getIterator()->offsetGet(1);
     $this->assertEquals(1, $resource_object->getField('quantity')->value);
+  }
+
+  public function testOrderItemHasResolvedPrice() {
+    $this->installModule('commerce_price_test');
+    /** @var \Drupal\commerce_product\Entity\Product $product */
+    $product = Product::create([
+      'type' => 'default',
+      'stores' => [$this->store->id()],
+    ]);
+    /** @var \Drupal\commerce_product\Entity\ProductVariation $product_variation */
+    $product_variation = ProductVariation::create([
+      'type' => 'default',
+      'sku' => 'TEST_JSONAPI_SKU',
+      'status' => 1,
+      'price' => new Price('4.00', 'USD'),
+    ]);
+    $product_variation->save();
+    $product->addVariation($product_variation);
+    $product->save();
+
+    $request = Request::create('https://localhost/cart/add', 'POST', [], [], [], [], Json::encode([
+      'data' => [
+        $this->createJsonapiData($product_variation, 1),
+      ],
+    ]));
+
+    $controller = $this->getController();
+    $response = $controller->process($request, ['commerce_product_variation--default']);
+
+    $resource_object = $response->getResponseData()->getData()->getIterator()->offsetGet(0);
+    assert($resource_object instanceof ResourceObject);
+    $this->assertEquals('commerce_order_item--default', $resource_object->getTypeName());
+    $purchased_entity = $resource_object->getField('purchased_entity');
+    $this->assertEquals($product_variation->id(), $purchased_entity->target_id);
+    $this->assertEquals(1, $resource_object->getField('quantity')->value);
+    $this->assertEquals(new Price('1.00', 'USD'), $resource_object->getField('unit_price')->first()->toPrice());
+
   }
 
   /**

@@ -20,23 +20,12 @@ use Symfony\Component\HttpFoundation\Request;
 /**
  * @group commerce_cart_api
  */
-final class CartCouponAddResourceTest extends CommerceKernelTestBase {
+final class CartCouponAddResourceTest extends CartResourceKernelTestBase {
 
   /**
    * {@inheritdoc}
    */
   public static $modules = [
-    'serialization',
-    'jsonapi',
-    'jsonapi_resources',
-    'entity_reference_revisions',
-    'profile',
-    'state_machine',
-    'commerce_order',
-    'path',
-    'commerce_product',
-    'commerce_cart',
-    'commerce_cart_api',
     'commerce_promotion',
   ];
 
@@ -45,21 +34,10 @@ final class CartCouponAddResourceTest extends CommerceKernelTestBase {
    */
   protected function setUp() {
     parent::setUp();
-    $this->installEntitySchema('commerce_order');
-    $this->installEntitySchema('commerce_order_item');
-    $this->installEntitySchema('commerce_product');
-    $this->installEntitySchema('commerce_product_variation');
     $this->installEntitySchema('commerce_promotion');
     $this->installEntitySchema('commerce_promotion_coupon');
     $this->installSchema('commerce_promotion', ['commerce_promotion_usage']);
-    EntityFormMode::create([
-      'id' => 'commerce_order_item.add_to_cart',
-      'label' => 'Add to cart',
-      'targetEntityType' => 'commerce_order_item',
-    ])->save();
     $this->installConfig([
-      'commerce_product',
-      'commerce_order',
       'commerce_promotion',
     ]);
   }
@@ -68,29 +46,7 @@ final class CartCouponAddResourceTest extends CommerceKernelTestBase {
    * Tests adding a coupon.
    */
   public function testAddCoupon() {
-    $promotion = Promotion::create([
-      'order_types' => ['default'],
-      'stores' => [$this->store->id()],
-      'usage_limit' => 1,
-      'start_date' => '2017-01-01',
-      'status' => TRUE,
-      'offer' => [
-        'target_plugin_id' => 'order_item_percentage_off',
-        'target_plugin_configuration' => [
-          'percentage' => '0.5',
-        ],
-      ],
-    ]);
-    $promotion->save();
-
-    $coupon = Coupon::create([
-      'promotion_id' => $promotion->id(),
-      'code' => 'PERCENTAGE_OFF',
-      'usage_limit' => 1,
-      'status' => TRUE,
-    ]);
-    $coupon->save();
-    assert($coupon instanceof CouponInterface);
+    $coupon = $this->getTestCoupon();
 
     $controller = $this->getController();
 
@@ -139,9 +95,9 @@ final class CartCouponAddResourceTest extends CommerceKernelTestBase {
         'type' => 'promotion',
         'label' => 'Discount',
         'amount' => new Price('-2.00', 'USD'),
-        'source_id' => $promotion->id(),
+        'source_id' => $coupon->getPromotionId(),
         'included' => TRUE,
-        'percentage' => '0.5',
+        'percentage' => '0.5',w
       ]),
     ], $order->collectAdjustments());
 
@@ -164,11 +120,45 @@ final class CartCouponAddResourceTest extends CommerceKernelTestBase {
         'type' => 'promotion',
         'label' => 'Discount',
         'amount' => new Price('-2.00', 'USD'),
-        'source_id' => $promotion->id(),
+        'source_id' => $coupon->getPromotionId(),
         'included' => TRUE,
         'percentage' => '0.5',
       ]),
     ], $order->collectAdjustments());
+  }
+
+  /**
+   * Get a test coupon.
+   *
+   * @return \Drupal\commerce_promotion\Entity\CouponInterface
+   *   The test coupon.
+   * @throws \Drupal\Core\Entity\EntityStorageException
+   */
+  protected function getTestCoupon() {
+    $promotion = Promotion::create([
+      'order_types' => ['default'],
+      'stores' => [$this->store->id()],
+      'usage_limit' => 1,
+      'start_date' => '2017-01-01',
+      'status' => TRUE,
+      'offer' => [
+        'target_plugin_id' => 'order_item_percentage_off',
+        'target_plugin_configuration' => [
+          'percentage' => '0.5',
+        ],
+      ],
+    ]);
+    $promotion->save();
+
+    $coupon = Coupon::create([
+      'promotion_id' => $promotion->id(),
+      'code' => 'PERCENTAGE_OFF',
+      'usage_limit' => 1,
+      'status' => TRUE,
+    ]);
+    $coupon->save();
+    assert($coupon instanceof CouponInterface);
+    return $coupon;
   }
 
   /**

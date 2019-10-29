@@ -140,7 +140,7 @@ class Routes implements ContainerInjectionInterface {
    *   The route.
    */
   protected function cartClear() {
-    $route = new Route('/cart/{commerce_order}/items');
+    $route = new Route('/cart/{commerce_order}');
     $route->addDefaults(['_jsonapi_resource' => CartClearResource::class]);
     $route->setMethods(['DELETE']);
     $parameters = $route->getOption('parameters') ?: [];
@@ -181,12 +181,21 @@ class Routes implements ContainerInjectionInterface {
    *   The route.
    */
   protected function cartRemoveItem() {
-    $route = new Route('/cart/{commerce_order}/items/{commerce_order_item}');
-    $route->addDefaults(['_jsonapi_resource' => CartRemoveItemResource::class]);
+    $order_item_resource_types = array_filter($this->resourceTypeRepository->all(), function (ResourceType $resource_type) {
+      return $resource_type->getEntityTypeId() === 'commerce_order_item';
+    });
+    $order_item_resource_types = array_map(static function (ResourceType $resource_type) {
+      return $resource_type->getTypeName();
+    }, $order_item_resource_types);
+
+    $route = new Route('/cart/{commerce_order}/items');
+    $route->addDefaults([
+      '_jsonapi_resource' => CartRemoveItemResource::class,
+      '_order_item_resource_types' => $order_item_resource_types,
+    ]);
     $route->setMethods(['DELETE']);
     $parameters = $route->getOption('parameters') ?: [];
     $parameters['commerce_order']['type'] = 'entity:commerce_order';
-    $parameters['commerce_order_item']['type'] = 'entity:commerce_order_item';
     $route->setOption('parameters', $parameters);
     return $route;
   }

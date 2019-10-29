@@ -184,15 +184,17 @@ final class CartAddResource extends CartResourceBase {
     $context = new RenderContext();
     $order_items = $this->renderer->executeInRenderContext($context, function () use ($resource_identifiers) {
       $order_items = [];
+      $order_item_storage = $this->entityTypeManager->getStorage('commerce_order_item');
+      assert($order_item_storage instanceof OrderItemStorageInterface);
       foreach ($resource_identifiers as $resource_identifier) {
         $meta = $resource_identifier->getMeta();
         $purchased_entity = $this->getPurchasableEntityFromResourceIdentifier($resource_identifier);
         $store = $this->selectStore($purchased_entity);
-        // @todo verify this is tested for quantity.
-        $order_item = $this->createOrderItemFromPurchasableEntity($store, $purchased_entity, $meta['quantity'] ?? 1);
+        $order_item = $order_item_storage->createFromPurchasableEntity($purchased_entity, ['quantity' => $meta['quantity'] ?? 1]);
         $cart = $this->getCartForOrderItem($order_item, $store);
-        // @todo we need test coverage for `combine` in the metadata.
         $order_item = $this->cartManager->addOrderItem($cart, $order_item, $meta['combine'] ?? TRUE);
+        // Reload the order item as the cart has refreshed.
+        $order_item = $order_item_storage->load($order_item->id());
         $order_items[] = ResourceObject::createFromEntity($this->resourceTypeRepository->get($order_item->getEntityTypeId(), $order_item->bundle()), $order_item);
       }
       return $order_items;
@@ -224,31 +226,6 @@ final class CartAddResource extends CartResourceBase {
     $purchased_entity = $this->entityRepository->getTranslationFromContext($purchased_entity, NULL, ['operation' => 'entity_upcast']);
     assert($purchased_entity instanceof PurchasableEntityInterface);
     return $purchased_entity;
-  }
-
-  /**
-   * Creates an order item from the purchased entity.
-   *
-   * @param \Drupal\commerce_store\Entity\StoreInterface $store
-   *   The store.
-   * @param \Drupal\commerce\PurchasableEntityInterface $purchased_entity
-   *   The purchased entity.
-   * @param int $quantity
-   *   THe quantity.
-   *
-   * @return \Drupal\commerce_order\Entity\OrderItemInterface
-   *   The order item.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
-   */
-  private function createOrderItemFromPurchasableEntity(StoreInterface $store, PurchasableEntityInterface $purchased_entity, $quantity): OrderItemInterface {
-    $order_item_storage = $this->entityTypeManager->getStorage('commerce_order_item');
-    assert($order_item_storage instanceof OrderItemStorageInterface);
-    $order_item = $order_item_storage->createFromPurchasableEntity($purchased_entity, ['quantity' => $quantity]);
-    $context = new Context($this->currentUser, $store);
-    $order_item->setUnitPrice($this->chainPriceResolver->resolve($purchased_entity, $order_item->getQuantity(), $context));
-    return $order_item;
   }
 
   /**
