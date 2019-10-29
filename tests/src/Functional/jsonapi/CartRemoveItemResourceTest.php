@@ -97,12 +97,10 @@ final class CartRemoveItemResourceTest extends CartResourceTestBase {
     $this->cartManager->addEntity($cart, $this->variation2, 5);
     $this->assertEquals(count($cart->getItems()), 2);
     $items = $cart->getItems();
-    $order_item = $items[0];
-    $order_item2 = $items[1];
+    [$order_item, $order_item2] = $items;
 
     // Request for order item that does not exist in the cart should fail.
-    $url = Url::fromRoute(
-      'commerce_cart_api.jsonapi.cart_remove_item', [
+    $url = Url::fromRoute('commerce_cart_api.jsonapi.cart_remove_item', [
       'commerce_order' => $cart->uuid(),
       'commerce_order_item' => $not_my_order_item->uuid(),
     ]);
@@ -127,7 +125,7 @@ final class CartRemoveItemResourceTest extends CartResourceTestBase {
             'info' => ['href' => HttpExceptionNormalizer::getInfoUrl(403)],
             'via' => ['href' => $url->setAbsolute()->toString()],
           ],
-        ]
+        ],
       ],
     ], Json::decode((string) $response->getBody()));
 

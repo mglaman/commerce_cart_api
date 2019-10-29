@@ -4,8 +4,10 @@ namespace Drupal\commerce_cart_api\Resource;
 
 use Symfony\Component\HttpFoundation\Request;
 
+/**
+ * Cart collection resource.
+ */
 final class CartCollectionResource extends CartResourceBase {
-
 
   /**
    * Get a carts collection for the current user.

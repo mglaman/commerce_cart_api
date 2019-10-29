@@ -3,12 +3,9 @@
 namespace Drupal\Tests\commerce_cart_api\Functional\jsonapi;
 
 use Drupal\commerce_order\Entity\OrderInterface;
-use Drupal\commerce_product\Entity\ProductVariationType;
 use Drupal\Component\Serialization\Json;
 use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Url;
-use Drupal\jsonapi\Normalizer\HttpExceptionNormalizer;
-use Drupal\user\Entity\User;
 use GuzzleHttp\RequestOptions;
 
 /**

@@ -87,7 +87,7 @@ class CartAccessApiResourceTest extends CartResourceTestBase {
    * Check no access for cart not belonging to user (cart canonical).
    */
   public function testNotUsersCart() {
-    $request_options = $this->getAuthenticationRequestOptions('GET');
+    $request_options = $this->getAuthenticationRequestOptions();
 
     $cart = $this->cartProvider->createCart('default', $this->store, $this->createUser());
     $this->cartManager->addEntity($cart, $this->variation, 2);
@@ -101,7 +101,7 @@ class CartAccessApiResourceTest extends CartResourceTestBase {
   }
 
   /**
-   * Check no access for order item not in cart (cart update item);
+   * Check no access for order item not in cart (cart update item).
    */
   public function testInvalidOrderItemCart() {
     $request_options = $this->getAuthenticationRequestOptions();
@@ -116,7 +116,7 @@ class CartAccessApiResourceTest extends CartResourceTestBase {
 
     $url = Url::fromRoute('commerce_cart_api.jsonapi.cart_update_item', [
       'commerce_order' => $cart->uuid(),
-      'commerce_order_item' => $other_order_item->uuid()
+      'commerce_order_item' => $other_order_item->uuid(),
     ]);
     $request_options[RequestOptions::HEADERS]['Accept'] = 'application/vnd.api+json';
     $request_options[RequestOptions::HEADERS]['Content-Type'] = 'application/vnd.api+json';
@@ -125,9 +125,9 @@ class CartAccessApiResourceTest extends CartResourceTestBase {
         'type' => 'commerce_order_item--default',
         'id' => $other_order_item->uuid(),
         'attributes' => [
-          'quantity' => 10
+          'quantity' => 10,
         ],
-      ]
+      ],
     ]);
     $response = $this->request('PATCH', $url, $request_options);
     $this->assertResponseCode(403, $response);

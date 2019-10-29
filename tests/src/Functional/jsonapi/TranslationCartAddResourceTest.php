@@ -89,7 +89,7 @@ class TranslationCartAddResourceTest extends CartResourceTestBase {
     ]);
 
     $response = $this->request('POST', $url, $request_options);
-    $this->assertResponseCode(200,$response);
+    $this->assertResponseCode(200, $response);
     $response_body = Json::decode((string) $response->getBody());
     $this->assertEquals(count($response_body['data']), 1);
     $this->assertEquals(1, $response_body['data'][0]['attributes']['drupal_internal__order_item_id']);

@@ -53,15 +53,15 @@ final class CartUpdateItemResourceTest extends CartResourceTestBase {
     $cart = $this->cartProvider->createCart('default', $this->store, $this->account);
     $order_item = $this->cartManager->addEntity($cart, $this->variation, 2);
 
-    $non_existant_order_item_uuid = $this->container->get('uuid')->generate();
+    $non_existent_order_item_uuid = $this->container->get('uuid')->generate();
     $url = Url::fromRoute('commerce_cart_api.jsonapi.cart_update_item', [
       'commerce_order' => $cart->uuid(),
-      'commerce_order_item' => $non_existant_order_item_uuid,
+      'commerce_order_item' => $non_existent_order_item_uuid,
     ]);
     $request_options[RequestOptions::BODY] = Json::encode([
       'data' => [
         'type' => $order_item->getEntityTypeId() . '--' . $order_item->bundle(),
-        'id' => $non_existant_order_item_uuid,
+        'id' => $non_existent_order_item_uuid,
         'attributes' => [
           'quantity' => 5,
         ],
@@ -240,8 +240,7 @@ final class CartUpdateItemResourceTest extends CartResourceTestBase {
     $this->cartManager->addEntity($cart, $this->variation2, 5);
     $this->assertEquals(count($cart->getItems()), 2);
     $items = $cart->getItems();
-    $order_item = $items[0];
-    $order_item_2 = $items[1];
+    [$order_item, $order_item_2] = $items;
     $this->assertEquals($order_item->getQuantity(), 2);
     $this->assertEquals($order_item_2->getQuantity(), 5);
 
@@ -257,7 +256,7 @@ final class CartUpdateItemResourceTest extends CartResourceTestBase {
         'attributes' => [
           'quantity' => 1,
         ],
-      ]
+      ],
     ]);
     $response = $this->request('PATCH', $url, $request_options);
     $this->assertResponseCode(200, $response);
@@ -313,11 +312,11 @@ final class CartUpdateItemResourceTest extends CartResourceTestBase {
             ],
             'links' => [
               'related' => [
-                'href' => Url::fromRoute('jsonapi.commerce_order--default.store_id.related', ['entity' => $cart->uuid()])->setAbsolute()->toString()
+                'href' => Url::fromRoute('jsonapi.commerce_order--default.store_id.related', ['entity' => $cart->uuid()])->setAbsolute()->toString(),
               ],
               'self' => [
-                'href' => Url::fromRoute('jsonapi.commerce_order--default.store_id.relationship.get', ['entity' => $cart->uuid()])->setAbsolute()->toString()
-              ]
+                'href' => Url::fromRoute('jsonapi.commerce_order--default.store_id.relationship.get', ['entity' => $cart->uuid()])->setAbsolute()->toString(),
+              ],
             ],
           ],
           'order_items' => [
@@ -329,15 +328,15 @@ final class CartUpdateItemResourceTest extends CartResourceTestBase {
               [
                 'type' => 'commerce_order_item--default',
                 'id' => $order_item_2->uuid(),
-              ]
+              ],
             ],
             'links' => [
               'related' => [
-                'href' => Url::fromRoute('jsonapi.commerce_order--default.order_items.related', ['entity' => $cart->uuid()])->setAbsolute()->toString()
+                'href' => Url::fromRoute('jsonapi.commerce_order--default.order_items.related', ['entity' => $cart->uuid()])->setAbsolute()->toString(),
               ],
               'self' => [
-                'href' => Url::fromRoute('jsonapi.commerce_order--default.order_items.relationship.get', ['entity' => $cart->uuid()])->setAbsolute()->toString()
-              ]
+                'href' => Url::fromRoute('jsonapi.commerce_order--default.order_items.relationship.get', ['entity' => $cart->uuid()])->setAbsolute()->toString(),
+              ],
             ],
           ],
         ],

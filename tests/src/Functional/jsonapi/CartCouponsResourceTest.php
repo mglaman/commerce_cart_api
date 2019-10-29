@@ -80,6 +80,7 @@ class CartCouponsResourceTest extends CartResourceTestBase {
     $order_storage = $this->container->get('entity_type.manager')->getStorage('commerce_order');
     $order_storage->resetCache();
     $cart = $order_storage->load($cart->id());
+    assert($cart instanceof OrderInterface);
     $this->assertFalse($cart->get('coupons')->isEmpty());
   }
 

@@ -6,14 +6,20 @@ use Drupal\commerce\Context;
 use Drupal\commerce\PurchasableEntityInterface;
 use Drupal\commerce_cart\CartManagerInterface;
 use Drupal\commerce_cart\CartProviderInterface;
-use Drupal\commerce_cart_api\Controller\jsonapi\EntityResourceShim;
+use Drupal\commerce_cart_api\EntityResourceShim;
 use Drupal\commerce_order\Entity\OrderInterface;
 use Drupal\commerce_order\Entity\OrderItemInterface;
 use Drupal\commerce_order\OrderItemStorageInterface;
+use Drupal\commerce_order\Resolver\ChainOrderTypeResolverInterface;
+use Drupal\commerce_price\Resolver\ChainPriceResolverInterface;
+use Drupal\commerce_store\CurrentStoreInterface;
 use Drupal\commerce_store\Entity\StoreInterface;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\EntityRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Render\RenderContext;
+use Drupal\Core\Render\RendererInterface;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\jsonapi\Access\EntityAccessChecker;
 use Drupal\jsonapi\JsonApiResource\ResourceIdentifier;
 use Drupal\jsonapi\JsonApiResource\ResourceObject;
@@ -32,34 +38,91 @@ final class CartAddResource extends CartResourceBase {
   /**
    * The JSON:API controller.
    *
-   * @var \Drupal\commerce_cart_api\Controller\jsonapi\EntityResourceShim
+   * @var \Drupal\commerce_cart_api\EntityResourceShim
    */
-  protected $inner;
+  private $inner;
 
+  /**
+   * The chain price resolver.
+   *
+   * @var \Drupal\commerce_price\Resolver\ChainPriceResolverInterface
+   */
   private $chainPriceResolver;
 
+  /**
+   * The current store.
+   *
+   * @var \Drupal\commerce_store\CurrentStoreInterface
+   */
   private $currentStore;
 
+  /**
+   * The chain order type resolver.
+   *
+   * @var \Drupal\commerce_order\Resolver\ChainOrderTypeResolverInterface
+   */
   private $chainOrderTypeResolver;
 
+  /**
+   * The entity type repository.
+   *
+   * @var \Drupal\Core\Entity\EntityRepositoryInterface
+   */
   private $entityRepository;
 
+  /**
+   * The current user account.
+   *
+   * @var \Drupal\Core\Session\AccountInterface
+   */
   private $currentUser;
 
   /**
+   * The renderer.
+   *
    * @var \Drupal\Core\Render\Renderer|object|null
    */
   private $renderer;
 
-  public function __construct(ResourceResponseFactory $resource_response_factory, ResourceTypeRepositoryInterface $resource_type_repository, EntityTypeManagerInterface $entity_type_manager, EntityAccessChecker $entity_access_checker, CartProviderInterface $cart_provider, CartManagerInterface $cart_manager, EntityResourceShim $jsonapi_controller) {
+  /**
+   * Constructs a new CartAddResource object.
+   *
+   * @param \Drupal\jsonapi_resources\ResourceResponseFactory $resource_response_factory
+   *   The resource response factory.
+   * @param \Drupal\jsonapi\ResourceType\ResourceTypeRepositoryInterface $resource_type_repository
+   *   The resource type repository.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
+   * @param \Drupal\jsonapi\Access\EntityAccessChecker $entity_access_checker
+   *   The entity access checker.
+   * @param \Drupal\commerce_cart\CartProviderInterface $cart_provider
+   *   The cart provider.
+   * @param \Drupal\commerce_cart\CartManagerInterface $cart_manager
+   *   The cart manager.
+   * @param \Drupal\commerce_cart_api\EntityResourceShim $jsonapi_controller
+   *   The JSON:API controller shim.
+   * @param \Drupal\commerce_order\Resolver\ChainOrderTypeResolverInterface $chain_order_type_resolver
+   *   The chain order type resolver.
+   * @param \Drupal\commerce_store\CurrentStoreInterface $current_store
+   *   The current store.
+   * @param \Drupal\commerce_price\Resolver\ChainPriceResolverInterface $chain_price_resolver
+   *   The chain price resolver.
+   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
+   *   The entity repository.
+   * @param \Drupal\Core\Session\AccountInterface $account
+   *   The current user account.
+   * @param \Drupal\Core\Render\RendererInterface $renderer
+   *   The renderer.
+   */
+  public function __construct(ResourceResponseFactory $resource_response_factory, ResourceTypeRepositoryInterface $resource_type_repository, EntityTypeManagerInterface $entity_type_manager, EntityAccessChecker $entity_access_checker, CartProviderInterface $cart_provider, CartManagerInterface $cart_manager, EntityResourceShim $jsonapi_controller, ChainOrderTypeResolverInterface $chain_order_type_resolver, CurrentStoreInterface $current_store, ChainPriceResolverInterface $chain_price_resolver, EntityRepositoryInterface $entity_repository, AccountInterface $account, RendererInterface $renderer) {
     parent::__construct($resource_response_factory, $resource_type_repository, $entity_type_manager, $entity_access_checker, $cart_provider, $cart_manager);
     $this->inner = $jsonapi_controller;
-    $this->chainOrderTypeResolver = \Drupal::getContainer()->get('commerce_order.chain_order_type_resolver');
-    $this->currentStore = \Drupal::getContainer()->get('commerce_store.current_store');
-    $this->chainPriceResolver = \Drupal::getContainer()->get('commerce_price.chain_price_resolver');
-    $this->entityRepository = \Drupal::getContainer()->get('entity.repository');
-    $this->currentUser = \Drupal::currentUser();
-    $this->renderer = \Drupal::getContainer()->get('renderer');
+    $this->chainOrderTypeResolver = $chain_order_type_resolver;
+    $this->currentStore = $current_store;
+    $this->chainPriceResolver = $chain_price_resolver;
+    $this->entityRepository = $entity_repository;
+    $this->currentUser = $account;
+    $this->renderer = $renderer;
   }
 
   /**
@@ -73,10 +136,30 @@ final class CartAddResource extends CartResourceBase {
       $container->get('jsonapi_resources.entity_access_checker'),
       $container->get('commerce_cart.cart_provider'),
       $container->get('commerce_cart.cart_manager'),
-      $container->get('commerce_cart_api.jsonapi_controller_shim')
+      $container->get('commerce_cart_api.jsonapi_controller_shim'),
+      $container->get('commerce_order.chain_order_type_resolver'),
+      $container->get('commerce_store.current_store'),
+      $container->get('commerce_price.chain_price_resolver'),
+      $container->get('entity.repository'),
+      $container->get('current_user'),
+      $container->get('renderer')
     );
   }
 
+  /**
+   * Process the request.
+   *
+   * @param \Symfony\Component\HttpFoundation\Request $request
+   *   The request.
+   * @param array $_purchasable_entity_resource_types
+   *   The purchasable entity resource types.
+   *
+   * @return \Drupal\jsonapi\ResourceResponse
+   *   The response.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   */
   public function process(Request $request, array $_purchasable_entity_resource_types = []): ResourceResponse {
     // @todo `default` may not exist. Order items are not a based field, yet.
     // @todo once `items` is a base field, change to "virtual".

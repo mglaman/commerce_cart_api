@@ -4,8 +4,6 @@ namespace Drupal\commerce_cart_api;
 
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\jsonapi\Controller\EntityResource;
-use Drupal\jsonapi\JsonApiResource\IncludedData;
-use Drupal\jsonapi\JsonApiResource\LinkCollection;
 use Drupal\jsonapi\ResourceType\ResourceType;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -30,6 +28,5 @@ final class EntityResourceShim extends EntityResource {
   public function checkPatchFieldAccess(FieldItemListInterface $original_field, FieldItemListInterface $received_field) {
     return parent::checkPatchFieldAccess($original_field, $received_field);
   }
-
 
 }

@@ -3,7 +3,6 @@
 namespace Drupal\commerce_cart_api\Routing;
 
 use Drupal\commerce\PurchasableEntityInterface;
-use Drupal\commerce_cart_api\Controller\CartResourceController;
 use Drupal\commerce_cart_api\Resource\CartAddResource;
 use Drupal\commerce_cart_api\Resource\CartCanonicalResource;
 use Drupal\commerce_cart_api\Resource\CartClearResource;
@@ -107,12 +106,24 @@ class Routes implements ContainerInjectionInterface {
     return $routes;
   }
 
+  /**
+   * The cart collection resource route.
+   *
+   * @return \Symfony\Component\Routing\Route
+   *   The route.
+   */
   protected function cartsCollection() {
     $route = new Route('/cart');
     $route->addDefaults(['_jsonapi_resource' => CartCollectionResource::class]);
     return $route;
   }
 
+  /**
+   * The cart canonical resource route.
+   *
+   * @return \Symfony\Component\Routing\Route
+   *   The route.
+   */
   protected function cartsCanonical() {
     $route = new Route('/cart/{commerce_order}');
     $route->addDefaults(['_jsonapi_resource' => CartCanonicalResource::class]);
@@ -122,6 +133,12 @@ class Routes implements ContainerInjectionInterface {
     return $route;
   }
 
+  /**
+   * The cart clear resource route.
+   *
+   * @return \Symfony\Component\Routing\Route
+   *   The route.
+   */
   protected function cartClear() {
     $route = new Route('/cart/{commerce_order}/items');
     $route->addDefaults(['_jsonapi_resource' => CartClearResource::class]);
@@ -132,25 +149,37 @@ class Routes implements ContainerInjectionInterface {
     return $route;
   }
 
+  /**
+   * The cart add resource route.
+   *
+   * @return \Symfony\Component\Routing\Route
+   *   The route.
+   */
   protected function cartAdd() {
-    $purchasble_entity_resource_types = array_filter($this->resourceTypeRepository->all(), function (ResourceType $resource_type) {
+    $purchasable_entity_resource_types = array_filter($this->resourceTypeRepository->all(), function (ResourceType $resource_type) {
       $entity_type = $this->entityTypeManager->getDefinition($resource_type->getEntityTypeId());
       return $entity_type->entityClassImplements(PurchasableEntityInterface::class);
     });
-    $purchasble_entity_resource_types = array_map(static function (ResourceType $resource_type) {
+    $purchasable_entity_resource_types = array_map(static function (ResourceType $resource_type) {
       return $resource_type->getTypeName();
-    }, $purchasble_entity_resource_types);
+    }, $purchasable_entity_resource_types);
 
     $route = new Route('/cart/add');
     $route->addDefaults([
       '_jsonapi_resource' => CartAddResource::class,
-      '_purchasable_entity_resource_types' => $purchasble_entity_resource_types,
+      '_purchasable_entity_resource_types' => $purchasable_entity_resource_types,
     ]);
     $route->setMethods(['POST']);
 
     return $route;
   }
 
+  /**
+   * The cart remove item resource route.
+   *
+   * @return \Symfony\Component\Routing\Route
+   *   The route.
+   */
   protected function cartRemoveItem() {
     $route = new Route('/cart/{commerce_order}/items/{commerce_order_item}');
     $route->addDefaults(['_jsonapi_resource' => CartRemoveItemResource::class]);
@@ -162,6 +191,12 @@ class Routes implements ContainerInjectionInterface {
     return $route;
   }
 
+  /**
+   * The cart update item resource route.
+   *
+   * @return \Symfony\Component\Routing\Route
+   *   The route.
+   */
   protected function cartUpdateItem() {
     $route = new Route('/cart/{commerce_order}/items/{commerce_order_item}');
     $route->addDefaults(['_jsonapi_resource' => CartUpdateItemResource::class]);
@@ -173,6 +208,12 @@ class Routes implements ContainerInjectionInterface {
     return $route;
   }
 
+  /**
+   * The cart coupon add resource route.
+   *
+   * @return \Symfony\Component\Routing\Route
+   *   The route.
+   */
   protected function cartCouponAdd() {
     $route = new Route('/cart/{commerce_order}/coupons');
     $route->setMethods(['PATCH']);

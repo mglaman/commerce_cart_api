@@ -2,28 +2,20 @@
 
 namespace Drupal\Tests\commerce_cart_api\Kernel;
 
-use Drupal\commerce_cart_api\Controller\CartResourceController;
-use Drupal\commerce_cart_api\Resource\CartAddResource;
 use Drupal\commerce_cart_api\Resource\CartCouponAddResource;
 use Drupal\commerce_order\Adjustment;
 use Drupal\commerce_order\Entity\Order;
 use Drupal\commerce_order\Entity\OrderInterface;
 use Drupal\commerce_order\Entity\OrderItem;
 use Drupal\commerce_price\Price;
-use Drupal\commerce_product\Entity\Product;
 use Drupal\commerce_product\Entity\ProductVariation;
 use Drupal\commerce_promotion\Entity\Coupon;
 use Drupal\commerce_promotion\Entity\CouponInterface;
 use Drupal\commerce_promotion\Entity\Promotion;
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\Entity\Entity\EntityFormMode;
-use Drupal\entity_test\Entity\EntityTest;
-use Drupal\jsonapi\JsonApiResource\JsonApiDocumentTopLevel;
-use Drupal\jsonapi\JsonApiResource\ResourceObject;
 use Drupal\Tests\commerce\Kernel\CommerceKernelTestBase;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
 /**
  * @group commerce_cart_api
@@ -72,6 +64,9 @@ final class CartCouponAddResourceTest extends CommerceKernelTestBase {
     ]);
   }
 
+  /**
+   * Tests adding a coupon.
+   */
   public function testAddCoupon() {
     $promotion = Promotion::create([
       'order_types' => ['default'],
@@ -139,14 +134,16 @@ final class CartCouponAddResourceTest extends CommerceKernelTestBase {
     $order = $this->reloadEntity($order);
     assert($order instanceof OrderInterface);
     $this->assertEquals(1, $order->get('coupons')->count());
-    $this->assertEquals([new Adjustment([
-      'type' => 'promotion',
-      'label' => 'Discount',
-      'amount' => new Price('-2.00', 'USD'),
-      'source_id' => $promotion->id(),
-      'included' => TRUE,
-      'percentage' => '0.5',
-    ])], $order->collectAdjustments());
+    $this->assertEquals([
+      new Adjustment([
+        'type' => 'promotion',
+        'label' => 'Discount',
+        'amount' => new Price('-2.00', 'USD'),
+        'source_id' => $promotion->id(),
+        'included' => TRUE,
+        'percentage' => '0.5',
+      ]),
+    ], $order->collectAdjustments());
 
     // Test dupe application.
     $request = Request::create("https://localhost/cart/{$order->uuid()}/coupons", 'PATCH', [], [], [], [], Json::encode([
@@ -162,14 +159,16 @@ final class CartCouponAddResourceTest extends CommerceKernelTestBase {
     $order = $this->reloadEntity($order);
     assert($order instanceof OrderInterface);
     $this->assertEquals(1, $order->get('coupons')->count());
-    $this->assertEquals([new Adjustment([
-      'type' => 'promotion',
-      'label' => 'Discount',
-      'amount' => new Price('-2.00', 'USD'),
-      'source_id' => $promotion->id(),
-      'included' => TRUE,
-      'percentage' => '0.5',
-    ])], $order->collectAdjustments());
+    $this->assertEquals([
+      new Adjustment([
+        'type' => 'promotion',
+        'label' => 'Discount',
+        'amount' => new Price('-2.00', 'USD'),
+        'source_id' => $promotion->id(),
+        'included' => TRUE,
+        'percentage' => '0.5',
+      ]),
+    ], $order->collectAdjustments());
   }
 
   /**
@@ -188,4 +187,5 @@ final class CartCouponAddResourceTest extends CommerceKernelTestBase {
       $this->container->get('renderer')
     );
   }
+
 }

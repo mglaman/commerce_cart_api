@@ -19,7 +19,7 @@ class CommerceCartApiServiceProvider extends ServiceProviderBase {
   /**
    * {@inheritdoc}
    *
-   * The ::register method runs before the site's service_yamls have been
+   * The ::register method runs before the site's `service_yamls` have been
    * registered. That means the parameter will always be false. We register the
    * decorated service here so that it respects the customized parameter.
    */

@@ -125,7 +125,7 @@ abstract  class CartResourceTestBase extends BrowserTestBase {
     /** @var \Drupal\Core\Entity\EntityStorageInterface $storage */
     $storage = $this->container->get('entity_type.manager')->getStorage($entity_type);
     $entity = $storage->create($values);
-    $status = $entity->save();
+    $entity->save();
     // The newly saved entity isn't identical to a loaded one, and would fail
     // comparisons.
     $entity = $storage->load($entity->id());

@@ -3,6 +3,7 @@
 namespace Drupal\commerce_cart_api;
 
 use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
@@ -31,7 +32,7 @@ class FieldAccess implements FieldAccessInterface {
   /**
    * {@inheritdoc}
    */
-  public function handle($operation, FieldDefinitionInterface $field_definition, AccountInterface $account, FieldItemListInterface $items = NULL) {
+  public function handle($operation, FieldDefinitionInterface $field_definition, AccountInterface $account, FieldItemListInterface $items = NULL): AccessResultInterface {
     $route = $this->routeMatch->getRouteObject();
     // Only check access if this is running on our API routes.
     if (!$route || !$route->hasRequirement('_cart_api')) {
@@ -57,7 +58,6 @@ class FieldAccess implements FieldAccessInterface {
       ];
       return AccessResult::forbiddenIf(in_array($field_definition->getName(), $disallowed_fields, TRUE));
     }
-
 
     return AccessResult::neutral();
   }
@@ -107,6 +107,7 @@ class FieldAccess implements FieldAccessInterface {
       return AccessResult::forbiddenIf(!in_array($field_definition->getName(), $allowed, TRUE));
     }
 
+    return AccessResult::neutral();
   }
 
   /**
@@ -153,6 +154,8 @@ class FieldAccess implements FieldAccessInterface {
       ];
       return AccessResult::forbiddenIf(!in_array($field_definition->getName(), $allowed, TRUE));
     }
+
+    return AccessResult::neutral();
   }
 
 }

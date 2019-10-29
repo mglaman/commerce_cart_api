@@ -5,7 +5,6 @@ namespace Drupal\commerce_cart_api\Plugin\Validation\Constraint;
 use Drupal\commerce_order\Entity\OrderInterface;
 use Drupal\commerce_promotion\Entity\CouponInterface;
 use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
-use Drupal\Core\Field\FieldItemInterface;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 

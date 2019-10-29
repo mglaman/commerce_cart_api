@@ -2,7 +2,6 @@
 
 namespace Drupal\Tests\commerce_cart_api\Kernel;
 
-use Drupal\commerce_cart_api\Controller\CartResourceController;
 use Drupal\commerce_cart_api\Resource\CartUpdateItemResource;
 use Drupal\commerce_order\Entity\Order;
 use Drupal\commerce_order\Entity\OrderItem;
@@ -11,16 +10,11 @@ use Drupal\commerce_product\Entity\Product;
 use Drupal\commerce_product\Entity\ProductVariation;
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\Entity\Entity\EntityFormMode;
-use Drupal\entity_test\Entity\EntityTest;
 use Drupal\jsonapi\Exception\EntityAccessDeniedHttpException;
 use Drupal\jsonapi\Exception\UnprocessableHttpEntityException;
-use Drupal\jsonapi\JsonApiResource\JsonApiDocumentTopLevel;
-use Drupal\jsonapi\JsonApiResource\ResourceObject;
 use Drupal\Tests\commerce\Kernel\CommerceKernelTestBase;
 use Symfony\Cmf\Component\Routing\RouteObjectInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
 /**
  * @group commerce_cart_api
@@ -137,6 +131,12 @@ final class CartUpdateItemResourceTest extends CommerceKernelTestBase {
     $controller->process($request, $order, $order_item);
   }
 
+  /**
+   * Test data for order item updates.
+   *
+   * @return \Generator
+   *   The test data.
+   */
   public function dataUpdateItemAttributes() {
     yield [
       [

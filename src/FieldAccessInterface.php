@@ -2,10 +2,14 @@
 
 namespace Drupal\commerce_cart_api;
 
+use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Session\AccountInterface;
 
+/**
+ * Runs field access checks for Cart API field operations.
+ */
 interface FieldAccessInterface {
 
   /**
@@ -27,6 +31,6 @@ interface FieldAccessInterface {
    * @return \Drupal\Core\Access\AccessResultInterface
    *   The access result.
    */
-  public function handle($operation, FieldDefinitionInterface $field_definition, AccountInterface $account, FieldItemListInterface $items = NULL);
+  public function handle($operation, FieldDefinitionInterface $field_definition, AccountInterface $account, FieldItemListInterface $items = NULL): AccessResultInterface;
 
 }

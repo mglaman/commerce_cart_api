@@ -5,7 +5,6 @@
  * Provides hooks.
  */
 
-use Drupal\commerce_cart_api\Plugin\Field\FieldType\FormattablePriceItem;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;

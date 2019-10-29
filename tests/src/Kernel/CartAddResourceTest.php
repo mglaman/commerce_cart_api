@@ -2,7 +2,6 @@
 
 namespace Drupal\Tests\commerce_cart_api\Kernel;
 
-use Drupal\commerce_cart_api\Controller\CartResourceController;
 use Drupal\commerce_cart_api\Resource\CartAddResource;
 use Drupal\commerce_price\Price;
 use Drupal\commerce_product\Entity\Product;
@@ -127,11 +126,11 @@ final class CartAddResourceTest extends CommerceKernelTestBase {
    */
   public function testNotCurrentStoreException() {
     $additional_store1 = $this->createStore();
-    $addiitonal_store2 = $this->createStore();
+    $additional_store2 = $this->createStore();
     /** @var \Drupal\commerce_product\Entity\Product $product */
     $product = Product::create([
       'type' => 'default',
-      'stores' => [$addiitonal_store2->id(), $additional_store1->id()],
+      'stores' => [$additional_store2->id(), $additional_store1->id()],
     ]);
     /** @var \Drupal\commerce_product\Entity\ProductVariation $product_variation */
     $product_variation = ProductVariation::create([
@@ -208,6 +207,8 @@ final class CartAddResourceTest extends CommerceKernelTestBase {
    *
    * @return \Drupal\commerce_cart_api\Resource\CartAddResource
    *   The controller.
+   *
+   * @throws \Exception
    */
   protected function getController() {
     return new CartAddResource(

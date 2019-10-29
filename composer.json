@@ -1,7 +1,7 @@
 {
   "name": "drupal/commerce_cart_api",
   "type": "drupal-module",
-  "description": "Provides a RESTful interface to interact with carts in Drupal Commerce via a lightweight public API.",
+  "description": "Provides an HTTP interface to interact with carts in Drupal Commerce.",
   "keywords": ["Drupal"],
   "license": "GPL-2.0+",
   "homepage": "https://www.drupal.org/project/commerce_cart_api",
