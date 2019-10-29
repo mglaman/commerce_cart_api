@@ -111,7 +111,6 @@ final class CartUpdateItemResource extends CartResourceBase {
     static::validate($commerce_order_item, $field_names);
 
     $commerce_order_item->save();
-    $commerce_order->setRefreshState(OrderInterface::REFRESH_ON_SAVE);
     $commerce_order->save();
 
     $resource_object = ResourceObject::createFromEntity($this->resourceTypeRepository->get($commerce_order->getEntityTypeId(), $commerce_order->bundle()), $commerce_order);

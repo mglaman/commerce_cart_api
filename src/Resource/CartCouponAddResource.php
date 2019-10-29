@@ -120,8 +120,6 @@ final class CartCouponAddResource extends EntityResourceBase {
     $field_list = $commerce_order->{$internal_relationship_field_name};
     $field_list->setValue($coupons);
     self::validate($commerce_order);
-
-    $commerce_order->setRefreshState(OrderInterface::REFRESH_ON_SAVE);
     $commerce_order->save();
 
     $resource_object = ResourceObject::createFromEntity($this->resourceTypeRepository->get($commerce_order->getEntityTypeId(), $commerce_order->bundle()), $commerce_order);

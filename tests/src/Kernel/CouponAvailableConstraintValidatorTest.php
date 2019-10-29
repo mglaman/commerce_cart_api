@@ -123,7 +123,7 @@ class CouponAvailableConstraintValidatorTest extends CommerceKernelTestBase {
 
     $this->container->get('commerce_promotion.usage')->register($order, $promotion, $coupon);
     $constraints = $order->validate();
-    $this->assertEquals('coupons.0', $constraints->get(0)->getPropertyPath());
+    $this->assertEquals('coupons.0.target_id', $constraints->get(0)->getPropertyPath());
     $this->assertEquals(sprintf('The coupon <em class="placeholder">%s</em> is not available for this order.', $coupon->getCode()), $constraints->get(0)->getMessage());
 
     $promotion->setUsageLimit(2);

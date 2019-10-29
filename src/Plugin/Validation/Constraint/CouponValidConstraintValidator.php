@@ -28,7 +28,8 @@ class CouponValidConstraintValidator extends ConstraintValidator {
       assert($coupon instanceof CouponInterface);
       if (!$coupon->available($order) || !$coupon->getPromotion()->applies($order)) {
         $this->context->buildViolation($constraint->message, ['%code' => $coupon->getCode()])
-          ->atPath((string) $delta)
+          ->atPath((string) $delta . '.target_id')
+          ->setInvalidValue($coupon->getCode())
           ->addViolation();
       }
     }

@@ -2,6 +2,7 @@
 
 namespace Drupal\commerce_cart_api\Resource;
 
+use Drupal\Core\Cache\CacheableMetadata;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
@@ -26,10 +27,10 @@ final class CartCollectionResource extends CartResourceBase {
     $carts = $this->cartProvider->getCarts();
     $top_level_data = $this->createCollectionDataFromEntities($carts);
     $response = $this->createJsonapiResponse($top_level_data, $request);
-    $response->getCacheableMetadata()->addCacheContexts([
-      'store',
-      'cart',
-    ]);
+
+    $cacheability = new CacheableMetadata();
+    $cacheability->addCacheContexts(['store', 'cart']);
+    $response->addCacheableDependency($cacheability);
     return $response;
   }
 
