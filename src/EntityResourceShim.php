@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\commerce_cart_api\Controller\jsonapi;
+namespace Drupal\commerce_cart_api;
 
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\jsonapi\Controller\EntityResource;

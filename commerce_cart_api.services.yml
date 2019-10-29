@@ -14,4 +14,4 @@ services:
 
   commerce_cart_api.jsonapi_controller_shim:
     parent: jsonapi.entity_resource
-    class: Drupal\commerce_cart_api\Controller\jsonapi\EntityResourceShim
+    class: Drupal\commerce_cart_api\EntityResourceShim

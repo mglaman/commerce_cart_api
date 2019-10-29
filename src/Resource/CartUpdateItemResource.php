@@ -4,7 +4,7 @@ namespace Drupal\commerce_cart_api\Resource;
 
 use Drupal\commerce_cart\CartManagerInterface;
 use Drupal\commerce_cart\CartProviderInterface;
-use Drupal\commerce_cart_api\Controller\jsonapi\EntityResourceShim;
+use Drupal\commerce_cart_api\EntityResourceShim;
 use Drupal\commerce_order\Entity\OrderInterface;
 use Drupal\commerce_order\Entity\OrderItemInterface;
 use Drupal\Component\Serialization\Json;
@@ -28,7 +28,7 @@ final class CartUpdateItemResource extends CartResourceBase {
   /**
    * The JSON:API controller.
    *
-   * @var \Drupal\commerce_cart_api\Controller\jsonapi\EntityResourceShim
+   * @var \Drupal\commerce_cart_api\EntityResourceShim
    */
   protected $inner;
 

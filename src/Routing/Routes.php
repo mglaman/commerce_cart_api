@@ -8,6 +8,7 @@ use Drupal\commerce_cart_api\Resource\CartAddResource;
 use Drupal\commerce_cart_api\Resource\CartCanonicalResource;
 use Drupal\commerce_cart_api\Resource\CartClearResource;
 use Drupal\commerce_cart_api\Resource\CartCollectionResource;
+use Drupal\commerce_cart_api\Resource\CartCouponAddResource;
 use Drupal\commerce_cart_api\Resource\CartRemoveItemResource;
 use Drupal\commerce_cart_api\Resource\CartUpdateItemResource;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
@@ -92,6 +93,7 @@ class Routes implements ContainerInjectionInterface {
     $routes->add('commerce_cart_api.jsonapi.cart_add', $this->cartAdd());
     $routes->add('commerce_cart_api.jsonapi.cart_remove_item', $this->cartRemoveItem());
     $routes->add('commerce_cart_api.jsonapi.cart_update_item', $this->cartUpdateItem());
+    $routes->add('commerce_cart_api.jsonapi.cart_coupon_add', $this->cartCouponAdd());
 
     // All routes must pass _cart_api access check.
     $routes->addRequirements([
@@ -106,28 +108,28 @@ class Routes implements ContainerInjectionInterface {
   }
 
   protected function cartsCollection() {
-    $collection_route = new Route('/cart');
-    $collection_route->addDefaults(['_jsonapi_resource' => CartCollectionResource::class]);
-    return $collection_route;
+    $route = new Route('/cart');
+    $route->addDefaults(['_jsonapi_resource' => CartCollectionResource::class]);
+    return $route;
   }
 
   protected function cartsCanonical() {
-    $collection_route = new Route('/cart/{commerce_order}');
-    $collection_route->addDefaults(['_jsonapi_resource' => CartCanonicalResource::class]);
-    $parameters = $collection_route->getOption('parameters') ?: [];
+    $route = new Route('/cart/{commerce_order}');
+    $route->addDefaults(['_jsonapi_resource' => CartCanonicalResource::class]);
+    $parameters = $route->getOption('parameters') ?: [];
     $parameters['commerce_order']['type'] = 'entity:commerce_order';
-    $collection_route->setOption('parameters', $parameters);
-    return $collection_route;
+    $route->setOption('parameters', $parameters);
+    return $route;
   }
 
   protected function cartClear() {
-    $collection_route = new Route('/cart/{commerce_order}/items');
-    $collection_route->addDefaults(['_jsonapi_resource' => CartClearResource::class]);
-    $collection_route->setMethods(['DELETE']);
-    $parameters = $collection_route->getOption('parameters') ?: [];
+    $route = new Route('/cart/{commerce_order}/items');
+    $route->addDefaults(['_jsonapi_resource' => CartClearResource::class]);
+    $route->setMethods(['DELETE']);
+    $parameters = $route->getOption('parameters') ?: [];
     $parameters['commerce_order']['type'] = 'entity:commerce_order';
-    $collection_route->setOption('parameters', $parameters);
-    return $collection_route;
+    $route->setOption('parameters', $parameters);
+    return $route;
   }
 
   protected function cartAdd() {
@@ -139,36 +141,46 @@ class Routes implements ContainerInjectionInterface {
       return $resource_type->getTypeName();
     }, $purchasble_entity_resource_types);
 
-    $collection_route = new Route('/cart/add');
-    $collection_route->addDefaults([
+    $route = new Route('/cart/add');
+    $route->addDefaults([
       '_jsonapi_resource' => CartAddResource::class,
       '_purchasable_entity_resource_types' => $purchasble_entity_resource_types,
     ]);
-    $collection_route->setMethods(['POST']);
+    $route->setMethods(['POST']);
 
-    return $collection_route;
+    return $route;
   }
 
   protected function cartRemoveItem() {
-    $collection_route = new Route('/cart/{commerce_order}/items/{commerce_order_item}');
-    $collection_route->addDefaults(['_jsonapi_resource' => CartRemoveItemResource::class]);
-    $collection_route->setMethods(['DELETE']);
-    $parameters = $collection_route->getOption('parameters') ?: [];
+    $route = new Route('/cart/{commerce_order}/items/{commerce_order_item}');
+    $route->addDefaults(['_jsonapi_resource' => CartRemoveItemResource::class]);
+    $route->setMethods(['DELETE']);
+    $parameters = $route->getOption('parameters') ?: [];
     $parameters['commerce_order']['type'] = 'entity:commerce_order';
     $parameters['commerce_order_item']['type'] = 'entity:commerce_order_item';
-    $collection_route->setOption('parameters', $parameters);
-    return $collection_route;
+    $route->setOption('parameters', $parameters);
+    return $route;
   }
 
   protected function cartUpdateItem() {
-    $collection_route = new Route('/cart/{commerce_order}/items/{commerce_order_item}');
-    $collection_route->addDefaults(['_jsonapi_resource' => CartUpdateItemResource::class]);
-    $collection_route->setMethods(['PATCH']);
-    $parameters = $collection_route->getOption('parameters') ?: [];
+    $route = new Route('/cart/{commerce_order}/items/{commerce_order_item}');
+    $route->addDefaults(['_jsonapi_resource' => CartUpdateItemResource::class]);
+    $route->setMethods(['PATCH']);
+    $parameters = $route->getOption('parameters') ?: [];
     $parameters['commerce_order']['type'] = 'entity:commerce_order';
     $parameters['commerce_order_item']['type'] = 'entity:commerce_order_item';
-    $collection_route->setOption('parameters', $parameters);
-    return $collection_route;
+    $route->setOption('parameters', $parameters);
+    return $route;
+  }
+
+  protected function cartCouponAdd() {
+    $route = new Route('/cart/{commerce_order}/coupons');
+    $route->setMethods(['PATCH']);
+    $route->addDefaults(['_jsonapi_resource' => CartCouponAddResource::class]);
+    $parameters = $route->getOption('parameters') ?: [];
+    $parameters['commerce_order']['type'] = 'entity:commerce_order';
+    $route->setOption('parameters', $parameters);
+    return $route;
   }
 
 }
