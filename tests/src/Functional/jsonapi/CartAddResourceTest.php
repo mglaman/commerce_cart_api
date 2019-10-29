@@ -26,7 +26,7 @@ final class CartAddResourceTest extends CartResourceTestBase {
           'type' => $this->variation->getEntityTypeId() . '--' . $this->variation->bundle(),
           'id' => $this->variation->uuid(),
           'meta' => [
-            'orderQuantity' => 1,
+            'quantity' => 1,
           ]
         ],
       ],

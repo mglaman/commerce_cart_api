@@ -82,7 +82,7 @@ class TranslationCartAddResourceTest extends CartResourceTestBase {
           'type' => 'commerce_product_variation--default',
           'id' => $this->variation->uuid(),
           'meta' => [
-            'orderQuantity' => 1,
+            'quantity' => 1,
           ],
         ],
       ],
@@ -118,7 +118,7 @@ class TranslationCartAddResourceTest extends CartResourceTestBase {
           'type' => 'commerce_product_variation--default',
           'id' => $this->variation->uuid(),
           'meta' => [
-            'orderQuantity' => 1,
+            'quantity' => 1,
           ],
         ],
       ],

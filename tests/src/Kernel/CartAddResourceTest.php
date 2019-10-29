@@ -8,6 +8,7 @@ use Drupal\commerce_product\Entity\Product;
 use Drupal\commerce_product\Entity\ProductVariation;
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\Entity\Entity\EntityFormMode;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\entity_test\Entity\EntityTest;
 use Drupal\jsonapi\JsonApiResource\JsonApiDocumentTopLevel;
 use Drupal\jsonapi\JsonApiResource\ResourceObject;
@@ -68,13 +69,7 @@ final class CartAddResourceTest extends CommerceKernelTestBase {
     $request = $this->prophesize(Request::class);
     $request->getContent()->willReturn(Json::encode([
       'data' => [
-        [
-          'type' => $entity->getEntityTypeId() . '--' . $entity->bundle(),
-          'id' => $entity->uuid(),
-          'meta' => [
-            'orderQuantity' => 1,
-          ],
-        ],
+        $this->createJsonapiData($entity, 1)
       ],
     ]));
 
@@ -104,13 +99,7 @@ final class CartAddResourceTest extends CommerceKernelTestBase {
     $request = $this->prophesize(Request::class);
     $request->getContent()->willReturn(Json::encode([
       'data' => [
-        [
-          'type' => $product_variation->getEntityTypeId() . '--' . $product_variation->bundle(),
-          'id' => $product_variation->uuid(),
-          'meta' => [
-            'orderQuantity' => 1,
-          ],
-        ],
+        $this->createJsonapiData($product_variation, 1),
       ],
     ]));
 
@@ -143,13 +132,7 @@ final class CartAddResourceTest extends CommerceKernelTestBase {
     $request = $this->prophesize(Request::class);
     $request->getContent()->willReturn(Json::encode([
       'data' => [
-        [
-          'type' => 'commerce_product_variation--default',
-          'id' => $product_variation->uuid(),
-          'meta' => [
-            'orderQuantity' => 1,
-          ],
-        ],
+        $this->createJsonapiData($product_variation, 1),
       ],
     ]));
 
@@ -182,24 +165,89 @@ final class CartAddResourceTest extends CommerceKernelTestBase {
 
     $request = Request::create('https://localhost/cart/add', 'POST', [], [], [], [], Json::encode([
       'data' => [
-        [
-          'type' => 'commerce_product_variation--default',
-          'id' => $product_variation->uuid(),
-          'meta' => [
-            'orderQuantity' => 1,
-          ],
-        ],
+        $this->createJsonapiData($product_variation, 1),
       ],
     ]));
 
     $controller = $this->getController();
     $response = $controller->process($request, ['commerce_product_variation--default']);
     $this->assertInstanceOf(JsonApiDocumentTopLevel::class, $response->getResponseData());
+    $this->assertCount(1, $response->getResponseData()->getData()->getIterator());
     $resource_object = $response->getResponseData()->getData()->getIterator()->offsetGet(0);
     assert($resource_object instanceof ResourceObject);
     $this->assertEquals('commerce_order_item--default', $resource_object->getTypeName());
     $purchased_entity = $resource_object->getField('purchased_entity');
     $this->assertEquals($product_variation->id(), $purchased_entity->target_id);
+    $this->assertEquals(1, $resource_object->getField('quantity')->value);
+
+    $request = Request::create('https://localhost/cart/add', 'POST', [], [], [], [], Json::encode([
+      'data' => [
+        $this->createJsonapiData($product_variation, 1),
+      ],
+    ]));
+    $response = $controller->process($request, ['commerce_product_variation--default']);
+    $this->assertCount(1, $response->getResponseData()->getData()->getIterator());
+    $resource_object = $response->getResponseData()->getData()->getIterator()->offsetGet(0);
+    $this->assertEquals(2, $resource_object->getField('quantity')->value);
+  }
+
+  public function testCombineAndArity() {
+    /** @var \Drupal\commerce_product\Entity\Product $product */
+    $product = Product::create([
+      'type' => 'default',
+      'stores' => [$this->store->id()],
+    ]);
+    /** @var \Drupal\commerce_product\Entity\ProductVariation $product_variation */
+    $product_variation = ProductVariation::create([
+      'type' => 'default',
+      'sku' => 'JSONAPI_SKU',
+      'status' => 1,
+      'price' => new Price('4.00', 'USD'),
+    ]);
+    $product_variation->save();
+    $product->addVariation($product_variation);
+    $product->save();
+
+    $controller = $this->getController();
+    $arity0 = $this->createJsonapiData($product_variation, 2);
+    $arity0['meta']['combine'] = FALSE;
+    $arity0['meta']['arity'] = 0;
+    $arity1 = $this->createJsonapiData($product_variation, 1);
+    $arity1['meta']['combine'] = FALSE;
+    $arity1['meta']['arity'] = 1;
+    $request = Request::create('https://localhost/cart/add', 'POST', [], [], [], [], Json::encode([
+      'data' => [
+        $arity0,
+        $arity1
+      ],
+    ]));
+    $response = $controller->process($request, ['commerce_product_variation--default']);
+    $this->assertCount(2, $response->getResponseData()->getData()->getIterator());
+    $resource_object = $response->getResponseData()->getData()->getIterator()->offsetGet(0);
+    $this->assertEquals(2, $resource_object->getField('quantity')->value);
+    $resource_object = $response->getResponseData()->getData()->getIterator()->offsetGet(1);
+    $this->assertEquals(1, $resource_object->getField('quantity')->value);
+  }
+
+  /**
+   * Creates data array for the JSON:API document
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity.
+   * @param int $quantity
+   *   The quantity.
+   *
+   * @return array
+   *   The data array.
+   */
+  private function createJsonapiData(EntityInterface $entity, $quantity) {
+    return [
+      'type' => $entity->getEntityTypeId() . '--' . $entity->bundle(),
+      'id' => $entity->uuid(),
+      'meta' => [
+        'quantity' => $quantity,
+      ],
+    ];
   }
 
   /**

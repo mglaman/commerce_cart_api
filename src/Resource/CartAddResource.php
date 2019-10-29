@@ -22,6 +22,7 @@ use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\jsonapi\Access\EntityAccessChecker;
 use Drupal\jsonapi\JsonApiResource\ResourceIdentifier;
+use Drupal\jsonapi\JsonApiResource\ResourceIdentifierInterface;
 use Drupal\jsonapi\JsonApiResource\ResourceObject;
 use Drupal\jsonapi\JsonApiResource\ResourceObjectData;
 use Drupal\jsonapi\ResourceResponse;
@@ -169,7 +170,6 @@ final class CartAddResource extends CartResourceBase {
         'order_items' => new ResourceTypeRelationship('order_items', 'order_items', TRUE, FALSE),
       ]
     );
-
     assert($resource_type->getInternalName('order_items') === 'order_items');
 
     /* @var \Drupal\jsonapi\ResourceType\ResourceType[] $purchasable_resource_types */
@@ -185,22 +185,14 @@ final class CartAddResource extends CartResourceBase {
     $order_items = $this->renderer->executeInRenderContext($context, function () use ($resource_identifiers) {
       $order_items = [];
       foreach ($resource_identifiers as $resource_identifier) {
-        $purchased_entity = $this->entityRepository->loadEntityByUuid(
-          $resource_identifier->getResourceType()->getEntityTypeId(),
-          $resource_identifier->getId()
-        );
-        if (!$purchased_entity || !$purchased_entity instanceof PurchasableEntityInterface) {
-          throw new UnprocessableEntityHttpException(sprintf('The purchasable entity %s does not exist.', $resource_identifier->getId()));
-        }
-        $purchased_entity = $this->entityRepository->getTranslationFromContext($purchased_entity, NULL, ['operation' => 'entity_upcast']);
-        assert($purchased_entity instanceof PurchasableEntityInterface);
+        $meta = $resource_identifier->getMeta();
+        $purchased_entity = $this->getPurchasableEntityFromResourceIdentifier($resource_identifier);
         $store = $this->selectStore($purchased_entity);
-        $quantity = ($meta = ($resource_identifier->getMeta() && isset($meta['orderQuantity']))) ? $meta['orderQuantity'] : 1;
-        $order_item = $this->createOrderItemFromPurchasableEntity($store, $purchased_entity, $quantity);
-
+        // @todo verify this is tested for quantity.
+        $order_item = $this->createOrderItemFromPurchasableEntity($store, $purchased_entity, $meta['quantity'] ?? 1);
         $cart = $this->getCartForOrderItem($order_item, $store);
-
-        $order_item = $this->cartManager->addOrderItem($cart, $order_item);
+        // @todo we need test coverage for `combine` in the metadata.
+        $order_item = $this->cartManager->addOrderItem($cart, $order_item, $meta['combine'] ?? TRUE);
         $order_items[] = ResourceObject::createFromEntity($this->resourceTypeRepository->get($order_item->getEntityTypeId(), $order_item->bundle()), $order_item);
       }
       return $order_items;
@@ -208,6 +200,30 @@ final class CartAddResource extends CartResourceBase {
 
     $primary_data = new ResourceObjectData($order_items);
     return $this->createJsonapiResponse($primary_data, $request);
+  }
+
+  /**
+   * Get the purchasable entity from a resource identifier.
+   *
+   * @param \Drupal\jsonapi\JsonApiResource\ResourceIdentifierInterface $resource_identifier
+   *   The resource identifier.
+   *
+   * @return \Drupal\commerce\PurchasableEntityInterface
+   *   The purchasable entity.
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
+   */
+  private function getPurchasableEntityFromResourceIdentifier(ResourceIdentifierInterface $resource_identifier) {
+    $purchased_entity = $this->entityRepository->loadEntityByUuid(
+      $resource_identifier->getResourceType()->getEntityTypeId(),
+      $resource_identifier->getId()
+    );
+    if (!$purchased_entity || !$purchased_entity instanceof PurchasableEntityInterface) {
+      throw new UnprocessableEntityHttpException(sprintf('The purchasable entity %s does not exist.', $resource_identifier->getId()));
+    }
+    $purchased_entity = $this->entityRepository->getTranslationFromContext($purchased_entity, NULL, ['operation' => 'entity_upcast']);
+    assert($purchased_entity instanceof PurchasableEntityInterface);
+    return $purchased_entity;
   }
 
   /**
