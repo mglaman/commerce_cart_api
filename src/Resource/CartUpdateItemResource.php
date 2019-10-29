@@ -7,6 +7,7 @@ use Drupal\commerce_cart\CartProviderInterface;
 use Drupal\commerce_cart_api\EntityResourceShim;
 use Drupal\commerce_order\Entity\OrderInterface;
 use Drupal\commerce_order\Entity\OrderItemInterface;
+use Drupal\commerce_order\OrderItemStorageInterface;
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\jsonapi\Access\EntityAccessChecker;
@@ -113,7 +114,12 @@ final class CartUpdateItemResource extends CartResourceBase {
     $commerce_order_item->save();
     $commerce_order->save();
 
-    $resource_object = ResourceObject::createFromEntity($this->resourceTypeRepository->get($commerce_order->getEntityTypeId(), $commerce_order->bundle()), $commerce_order);
+    $order_item_storage = $this->entityTypeManager->getStorage('commerce_order_item');
+    assert($order_item_storage instanceof OrderItemStorageInterface);
+    // Reload the order item as the cart has refreshed.
+    $commerce_order_item = $order_item_storage->load($commerce_order_item->id());
+
+    $resource_object = ResourceObject::createFromEntity($this->resourceTypeRepository->get($commerce_order_item->getEntityTypeId(), $commerce_order_item->bundle()), $commerce_order_item);
     $primary_data = new ResourceObjectData([$resource_object], 1);
     return $this->createJsonapiResponse($primary_data, $request);
   }

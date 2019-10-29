@@ -97,7 +97,7 @@ final class CartCouponAddResourceTest extends CartResourceKernelTestBase {
         'amount' => new Price('-2.00', 'USD'),
         'source_id' => $coupon->getPromotionId(),
         'included' => TRUE,
-        'percentage' => '0.5',w
+        'percentage' => '0.5',
       ]),
     ], $order->collectAdjustments());
 

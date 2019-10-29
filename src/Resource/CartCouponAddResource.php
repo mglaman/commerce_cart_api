@@ -122,9 +122,12 @@ final class CartCouponAddResource extends EntityResourceBase {
     self::validate($commerce_order);
     $commerce_order->save();
 
-    $resource_object = ResourceObject::createFromEntity($this->resourceTypeRepository->get($commerce_order->getEntityTypeId(), $commerce_order->bundle()), $commerce_order);
-    $primary_data = new ResourceObjectData([$resource_object], 1);
-    return $this->createJsonapiResponse($primary_data, $request);
+    return $this->inner->getRelationship(
+      $this->resourceTypeRepository->get($commerce_order->getEntityTypeId(), $commerce_order->bundle()),
+      $commerce_order,
+      'coupons',
+      $request
+    );
   }
 
 }

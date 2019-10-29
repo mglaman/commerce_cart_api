@@ -87,12 +87,15 @@ class Routes implements ContainerInjectionInterface {
     $routes = new RouteCollection();
 
     $routes->add('commerce_cart_api.jsonapi.cart_collection', $this->cartsCollection());
-    $routes->add('commerce_cart_api.jsonapi.cart_canonical', $this->cartsCanonical());
+    $routes->add('commerce_cart_api.jsonapi.cart_canonical', $this->cartCanonical());
     $routes->add('commerce_cart_api.jsonapi.cart_clear', $this->cartClear());
     $routes->add('commerce_cart_api.jsonapi.cart_add', $this->cartAdd());
     $routes->add('commerce_cart_api.jsonapi.cart_remove_item', $this->cartRemoveItem());
     $routes->add('commerce_cart_api.jsonapi.cart_update_item', $this->cartUpdateItem());
-    $routes->add('commerce_cart_api.jsonapi.cart_coupon_add', $this->cartCouponAdd());
+
+    if ($this->entityTypeManager->hasDefinition('commerce_promotion_coupon')) {
+      $routes->add('commerce_cart_api.jsonapi.cart_coupon_add', $this->cartCouponAdd());
+    }
 
     // All routes must pass _cart_api access check.
     $routes->addRequirements([
@@ -113,8 +116,18 @@ class Routes implements ContainerInjectionInterface {
    *   The route.
    */
   protected function cartsCollection() {
+    $order_resource_types = array_filter($this->resourceTypeRepository->all(), static function (ResourceType $resource_type) {
+      return $resource_type->getEntityTypeId() === 'commerce_order';
+    });
+    $order_resource_types = array_map(static function (ResourceType $resource_type) {
+      return $resource_type->getTypeName();
+    }, $order_resource_types);
+
     $route = new Route('/cart');
-    $route->addDefaults(['_jsonapi_resource' => CartCollectionResource::class]);
+    $route->addDefaults([
+      '_jsonapi_resource' => CartCollectionResource::class,
+      '_jsonapi_resource_types' => $order_resource_types,
+    ]);
     return $route;
   }
 
@@ -124,9 +137,19 @@ class Routes implements ContainerInjectionInterface {
    * @return \Symfony\Component\Routing\Route
    *   The route.
    */
-  protected function cartsCanonical() {
+  protected function cartCanonical() {
+    $order_resource_types = array_filter($this->resourceTypeRepository->all(), static function (ResourceType $resource_type) {
+      return $resource_type->getEntityTypeId() === 'commerce_order';
+    });
+    $order_resource_types = array_map(static function (ResourceType $resource_type) {
+      return $resource_type->getTypeName();
+    }, $order_resource_types);
+
     $route = new Route('/cart/{commerce_order}');
-    $route->addDefaults(['_jsonapi_resource' => CartCanonicalResource::class]);
+    $route->addDefaults([
+      '_jsonapi_resource' => CartCanonicalResource::class,
+      '_jsonapi_resource_types' => $order_resource_types,
+    ]);
     $parameters = $route->getOption('parameters') ?: [];
     $parameters['commerce_order']['type'] = 'entity:commerce_order';
     $route->setOption('parameters', $parameters);
@@ -141,7 +164,9 @@ class Routes implements ContainerInjectionInterface {
    */
   protected function cartClear() {
     $route = new Route('/cart/{commerce_order}');
-    $route->addDefaults(['_jsonapi_resource' => CartClearResource::class]);
+    $route->addDefaults([
+      '_jsonapi_resource' => CartClearResource::class,
+    ]);
     $route->setMethods(['DELETE']);
     $parameters = $route->getOption('parameters') ?: [];
     $parameters['commerce_order']['type'] = 'entity:commerce_order';
@@ -164,10 +189,18 @@ class Routes implements ContainerInjectionInterface {
       return $resource_type->getTypeName();
     }, $purchasable_entity_resource_types);
 
+    $order_item_resource_types = array_filter($this->resourceTypeRepository->all(), function (ResourceType $resource_type) {
+      return $resource_type->getEntityTypeId() === 'commerce_order_item';
+    });
+    $order_item_resource_types = array_map(static function (ResourceType $resource_type) {
+      return $resource_type->getTypeName();
+    }, $order_item_resource_types);
+
     $route = new Route('/cart/add');
     $route->addDefaults([
       '_jsonapi_resource' => CartAddResource::class,
       '_purchasable_entity_resource_types' => $purchasable_entity_resource_types,
+      '_jsonapi_resource_types' => $order_item_resource_types,
     ]);
     $route->setMethods(['POST']);
 
@@ -207,8 +240,18 @@ class Routes implements ContainerInjectionInterface {
    *   The route.
    */
   protected function cartUpdateItem() {
+    $order_item_resource_types = array_filter($this->resourceTypeRepository->all(), function (ResourceType $resource_type) {
+      return $resource_type->getEntityTypeId() === 'commerce_order_item';
+    });
+    $order_item_resource_types = array_map(static function (ResourceType $resource_type) {
+      return $resource_type->getTypeName();
+    }, $order_item_resource_types);
+
     $route = new Route('/cart/{commerce_order}/items/{commerce_order_item}');
-    $route->addDefaults(['_jsonapi_resource' => CartUpdateItemResource::class]);
+    $route->addDefaults([
+      '_jsonapi_resource' => CartUpdateItemResource::class,
+      '_jsonapi_resource_types' => $order_item_resource_types,
+    ]);
     $route->setMethods(['PATCH']);
     $parameters = $route->getOption('parameters') ?: [];
     $parameters['commerce_order']['type'] = 'entity:commerce_order';
@@ -224,9 +267,19 @@ class Routes implements ContainerInjectionInterface {
    *   The route.
    */
   protected function cartCouponAdd() {
+    $coupon_resource_types = array_filter($this->resourceTypeRepository->all(), function (ResourceType $resource_type) {
+      return $resource_type->getEntityTypeId() === 'commerce_promotion_coupon';
+    });
+    $coupon_resource_types = array_map(static function (ResourceType $resource_type) {
+      return $resource_type->getTypeName();
+    }, $coupon_resource_types);
+
     $route = new Route('/cart/{commerce_order}/coupons');
     $route->setMethods(['PATCH']);
-    $route->addDefaults(['_jsonapi_resource' => CartCouponAddResource::class]);
+    $route->addDefaults([
+      '_jsonapi_resource' => CartCouponAddResource::class,
+      '_jsonapi_resource_types' => $coupon_resource_types,
+    ]);
     $parameters = $route->getOption('parameters') ?: [];
     $parameters['commerce_order']['type'] = 'entity:commerce_order';
     $route->setOption('parameters', $parameters);
