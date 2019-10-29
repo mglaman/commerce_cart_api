@@ -218,7 +218,13 @@ final class CartAddResourceTest extends CommerceKernelTestBase {
       $this->container->get('jsonapi_resources.entity_access_checker'),
       $this->container->get('commerce_cart.cart_provider'),
       $this->container->get('commerce_cart.cart_manager'),
-      $this->container->get('commerce_cart_api.jsonapi_controller_shim')
+      $this->container->get('commerce_cart_api.jsonapi_controller_shim'),
+      $this->container->get('commerce_order.chain_order_type_resolver'),
+      $this->container->get('commerce_store.current_store'),
+      $this->container->get('commerce_price.chain_price_resolver'),
+      $this->container->get('entity.repository'),
+      $this->container->get('current_user'),
+      $this->container->get('renderer')
     );
   }
 
